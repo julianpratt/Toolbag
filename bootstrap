@@ -1,23 +1,13 @@
 #!/bin/bash
 
-if [ "${#NAS}" == 0 ]; then
-	echo "Set the NAS environment variable."
-	echo "e.g. export NAS=mynas"
-	exit
-fi	
-
-echo "export NAS=$NAS" >> ~/.profile
-
-source="$NAS/Toolbag/scripts"
 dest=/usr/local/bin
 
-if [ ! -f "$dest/addtool" ]; then
-	echo "addtool not installed. Installing..."
-	sudo curl  -sL $source/addtool > ~/addtool
-	sudo mv    ~/addtool $dest/addtool
-  	sudo chmod +x $dest/addtool
-fi
-
-addtool toolbag update
-update
- 
+cd Toolbag/scripts
+chmod +x *
+sudo mv * $dest
+cd ..
+mkdir bin
+cd    src
+make
+cd   ../bin
+sudo mv * $dest
