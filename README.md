@@ -1,7 +1,6 @@
 # Toolbag
 Tools to aid brain fade and reduce documentation 
 
-//
 
 ## Installation
 
@@ -12,36 +11,34 @@ It is installed from github, so the git command is required (if it isn't already
 
     sudo apt install -y git
 
-First clone the github repository, then make the setup script executable and run it. 
-Setup will cleanup after itself, by deleting the repository.
+First clone the github repository and make the setup script executable, and then run it. 
+Setup will clean up after itself, by deleting the repository you've just cloned.
 
     git clone https://github.com/julianpratt/Toolbag
-    chmod +c Toolbag/setup
+    chmod +x Toolbag/setup
     Toolbag/setup
 
 These instructions can be repeated to update an existing installation of Toolbag. 
 
 Alternatively use the update command to achieve the same thing.
 
-//
 
 ## Usage
 
 Each tool responds to -h, and the tools command lists the tools and their purpose.
 
-//
 
 ## Building a Raspberry Pi
 
-One of the reasons for this is to make it easier to setup a new Raspberry Pi. 
+One of the reasons for Toolbag is to make it easier to setup a new Raspberry Pi. 
 
 Raspberry Pi OS (formerly known as Raspbian), is a port of Debian and is installed on a micro SD card using rpi-imager (on Windows or Linux). This offers different Raspberry Pi OS images: no desktop, desktop and desktop plus recommended apps). 
 
-Before starting decide on the hostname of the Raspbery Pi. Using hostnames such as layoutpi, naspi, etc makes its purpose clear, to avoid mission creep and make it easier to remember which is which. Obviously the name is actually only associated with the image on the SD card. 
+Before starting decide on the hostname of the Raspbery Pi. Using hostnames such as layoutpi, naspi, etc makes its purpose clear, to avoid mission creep and make it easier to remember which is which. Obviously the name is actually only tied to the image on the SD card. 
 
 In RPi Imager, use Ctrl+Shift+X (or the settings button) to open advanced options:  
 - Disable overscan
-- Set hostname to layoutpi.local or naspi.local
+- Set hostname to (e.g.) layoutpi.local
 - Enable SSH (use password authentication)
 - Decide whether to set a different username
 - It is advisible to change the password
@@ -52,16 +49,18 @@ In RPi Imager, use Ctrl+Shift+X (or the settings button) to open advanced option
 
 These settings can be changed later by using a terminal and sudo raspi-config.
 
-In particular the boot behaviour, can be changed so the RPi just boots to command line (doesn’t load the desktop) and also boots straight to the Pi user (doesn‘t wait for login).   
+In particular the boot behaviour, can be changed so the RPi just boots to command line (doesn’t load the desktop) and also boots straight to the default user (doesn‘t wait for login).   
 
 Then decide whether or not a desktop is required for that RPi. The default Raspberry Pi OS has a desktop. Under Raspberry Pi OS (other) there is an image without a desktop.
 
-Put the SD card into the Pi and power up. After a while SSH (port 22) into the Pi. The RPi can now be accessed with (for example): ssh username@hostname
+Put the SD card into the Pi and power up. After a while SSH (port 22) into the Pi. The RPi can now be accessed with: 
+
+    ssh username@hostname
 
 Then setup Toolbag (see Installation, above) and download the latest updates:
+
     update
 
-//
 
 ### Power Save 
 Although the Raspberry Pi itself doesn't have a sleep mode, individual devices in Linux (including the network adapters) can. Run the command: 
@@ -76,11 +75,10 @@ to switch it off.
 
 The reason for worrying about power_save, is that is a right pain if you are operating a layout using JMRI (see next section) and the Pi goes to sleep (ask me how I know).
 
-//
 
 ## Setting up the Raspberry Pi for JMRI
 
-These instructions are a development (he might say regression) of Steve Todd's Raspberry Pi Build (https://mstevetodd.com/rpi). I was deeply grateful to Steve for providing this build, which got me going when I got stuck. But I wanted to understand what the ingredients of the build were, so I could adjust them. You might find Steve's build a better starting point for your purposes.    
+These instructions are a development (he might say regression) of Steve Todd's Raspberry Pi Build (https://mstevetodd.com/rpi). I was deeply grateful to Steve for providing this build, which got me going when I was stuck. But I wanted to understand what the ingredients of the build were, so I could adjust them. You might find Steve's build a better starting point for your purposes.    
 
 The aim is to get the Raspberry Pi to a point that it just boots straight into the panel and is active and ready. So just applying power is enough to get the layout functioning.  
 
