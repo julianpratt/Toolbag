@@ -1,0 +1,26 @@
+#!/bin/bash
+
+while getopts h flag
+do
+    if [ ${flag} == "h" ]
+    then 
+		echo "temp - create a temp folder under user's home and make it the current directory."
+        echo "       If invoked with untemp parameter (e.g. 'temp untemp') then it changes "
+        echo "       directory to user's home and deletes the temp folder." 
+        echo "       In many cases it is best to use this with a dot at the start: '. temp'."
+		exit
+    fi
+done
+
+cd ~
+
+if [ "$1" == "untemp" ]; then
+    if [ -d temp ]; then
+        rm -r temp
+    fi     
+else
+    if [ ! -d temp ]; then
+        mkdir temp
+    fi    
+    cd temp    
+fi

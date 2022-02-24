@@ -1,0 +1,213 @@
+#!/bin/bash
+
+while getopts h flag
+do
+    if [ ${flag} == "h" ]; then 
+		echo "addtool - Will install one of the following: dotnet, java, jmri, vscode, nodejs,"
+		echo "          latex or pandoc. Usage: 'addtool toolname' (e.g. addtool dotnet)."
+		echo ""
+  	echo "          In addition 'addtool toolbag' and 'addtool toolbag replace' will install"
+  	echo "          or update scripts, etc in /usr/local/bin that come from Toolbag."
+		exit
+    fi
+done
+
+if [ "$1" == "dotnet" ]; then
+	if [ ! command -v dotnet &> /dev/null ]; then
+		echo "dotnet not installed. Installing..."
+		wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+		sudo dpkg -i packages-microsoft-prod.deb
+
+		sudo apt-get update; sudo apt-get install -y apt-transport-https && sudo apt-get update && sudo apt-get install -y dotnet-sdk-5.0
+	else
+		echo "dotnet is already installed"	
+	fi	
+elif [ "$1" == "java" ]; then
+	if [ ! command -v java &> /dev/null ]; then
+		echo "java not installed. Installing openjdk-11... (n.b. v17 is latest LTS)"
+		sudo apt install -y openjdk-11-jdk
+	else
+		echo "java is already installed"	
+	fi	
+elif [ "$1" == "jmri" ]; then
+	dest=/opt 
+	if [ ! -d $dest/JMRI ]; then
+		echo "JMRI not installed. Installing v4.26... (v5 due summer 2022)"
+		path="https://github.com/JMRI/JMRI/releases/download/v4.26"
+		file="JMRI.4.26+R381c8dfc32.tgz"
+		localbin=/usr/local/bin
+		. temp
+		wget -q $path/$file 
+		tar xf $file
+		rm $file
+		sudo mv JMRI $dest
+
+		cat > panelpro << EOF		
+#!/bin/bash
+
+if [ ! -d /opt/JMRI ]; then
+  echo "JMRI is not installed!"
+else
+  cd /opt/JMRI
+  ./PanelPro
+fi  
+EOF
+
+		cat > decoderpro << EOF		
+#!/bin/bash
+
+if [ ! -d /opt/JMRI ]; then
+  echo "JMRI is not installed!"
+else
+  cd /opt/JMRI
+  ./DecoderPro
+fi  
+EOF
+		chmod +x panelpro
+		chmod +x decoderpro
+		sudo mv panelpro   $localbin
+		sudo mv decoderpro $localbin
+
+		cat > ~/Desktop/PanelPro.desktop << EOF
+[Desktop Entry]
+Encoding=UTF-8
+Name=JMRI Panel Pro
+Comment=Start JMRI PanelPro
+Exec=panelpro
+Icon=/opt/JMRI/resources/PanelPro.gif
+Terminal=false
+Type=Application
+Categories=Utility
+X-KeepTerminal=false
+StartupNotify=false
+EOF
+		if [ ! -d ~/.config/autostart ]; then
+			mkdir ~/.config/autostart
+		fi	
+		ln -s ~/Desktop/PanelPro.desktop ~/.config/autostart/PanelPro.desktop
+
+		echo "JMRI PanelPro will autostart on reboot."
+		echo "To avoid popup options when using PanelPro.desktop,"
+		echo "set 'Do not ask options on launch executable file' to true"
+		echo "in File Manager, Edit, Preferences, General."
+
+		temp untemp
+
+	else
+		echo "JMRI is already installed"	
+	fi		
+elif [ "$1" == "vscode" ]; then
+	if [ ! command -v code &> /dev/null ]; then
+		sudo apt update
+		sudo apt install -y code
+  elif [ "$2" == "upgrade" ]; then		
+		echo "vscode installed. Upgrading..."
+		sudo apt update
+		sudo apt upgrade -y code
+	else
+		echo "vscode is already installed (it can be upgraded with 'addtool vscode upgrade')"	
+	fi	
+elif [ "$1" == "nodejs" ]
+then	
+	if ! command -v node &> /dev/null
+	then
+		echo "Installing node v15.4. v17 is the latest but CbusServer won't 'npm install' with it."
+		curl -sL https://deb.nodesource.com/setup_15.x | sudo -E bash -
+		sudo apt install -y nodejs
+		echo "Use versions command to report which node and npm versions are installed."
+	else
+		echo "nodejs is already installed"	
+	fi	
+elif [ "$1" == "npm" ]
+then	
+	if ! command -v npm &> /dev/null
+	then
+		echo "To install npm use 'addtool nodejs'"
+	else
+		echo "npm is already installed"	
+	fi	
+elif [ "$1" == "latex" ]
+then	
+	if ! command -v pdflatex &> /dev/null
+	then
+		sudo apt install texlive
+		sudo apt install texlive-base
+		sudo apt install texlive-latex-recommended
+		sudo apt install texlive-latex-extra
+		sudo apt install texlive-fonts-recommended
+		sudo apt install texlive-fonts-extra
+	else
+		echo "latex is already installed"	
+	fi	
+elif [ "$1" == "pandoc" ]
+then	
+	if ! command -v pandoc &> /dev/null
+	then
+		if [ $(arch) == "x86_64" ]; then 
+			arch="amd64"
+		else
+			arch="arm64"
+		fi		 
+		dest=/opt
+		pandocversion="2.17.1.1"
+		path="https://github.com/jgm/pandoc/releases/download/$pandocversion"
+		file="pandoc-$pandocversion-linux-$arch.tar.gz"
+		localbin=/usr/local/bin
+		. temp
+		wget -q $path/$file 
+		tar xf $file
+		rm $file
+		cd "pandoc-$pandocversion/bin"
+		sudo mv pandoc $localbin
+		temp untemp
+	else
+		echo "pandoc is already installed"	
+	fi	
+elif [ "$1" == "toolbag" ]
+then	
+	if [ "$2" == "" ]
+	then	
+		echo "When using 'addtool toolbag', you also need to specify the script name (e.g. addtool toolbag versions)."
+		exit
+	fi
+	
+	source="$NAS/Toolbag/scripts"
+	dest=/usr/local/bin
+
+	if [ ! -f "$dest/$2" ]; then
+		echo "$2 not installed. Installing..."
+	elif [ "$3" == "replace" ]; then		
+		echo "$2 installed. Replacing..."
+	else
+		exit
+	fi
+
+	if [ ! "$2" == "bin" ]; then			
+		curl -sL $source/$2 > ~/$2
+		sudo mv ~/$2 $dest/$2
+		sudo chmod +x $dest/$2
+	else
+		. temp
+		mkdir bin
+		mkdir src
+		cd    src
+		wget -q http://$NAS/Toolbag/src/change.c 
+		wget -q http://$NAS/Toolbag/src/datestamp.c 
+		wget -q http://$NAS/Toolbag/src/Makefile
+		wget -q http://$NAS/Toolbag/src/prime.c  
+		wget -q http://$NAS/Toolbag/src/sort.c 
+		wget -q http://$NAS/Toolbag/src/spacetab.c 
+		wget -q http://$NAS/Toolbag/src/tee.c 
+		wget -q http://$NAS/Toolbag/src/waituntil.c 
+		make
+		cd   ../bin
+		sudo mv * $dest
+		temp untemp
+	fi	
+
+elif [ "$1" == "" ]
+then	
+	echo "You need to specify which package or command to install. See addtool -h."
+else
+	echo "Package or command '$1' is not recognised. Use: dotnet, java, vscode or nodejs."	
+fi

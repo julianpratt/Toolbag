@@ -1,0 +1,20 @@
+#!/bin/bash
+
+while getopts h flag
+do
+    if [ ${flag} == "h" ]
+    then 
+		echo "query - report on configuration and environment"
+        echo "        'query ip' reports: IP address, gateway IP address and DNS IP address" 
+		exit
+    fi
+done
+
+if [ "$1" == "ip" ]
+then
+    echo "IP address is $(hostname -I)"
+    echo "Gateway IP address is $(ip r | grep default)"
+    cat /etc/resolv.conf | grep nameserver
+else
+    echo "query '$1' is not valid."    
+fi

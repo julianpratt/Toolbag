@@ -1,0 +1,12 @@
+#!/bin/bash
+
+while getopts h flag
+do
+    if [ ${flag} == "h" ]
+    then 
+		echo "treesize - calculates space used by folders in current directory"
+		exit
+    fi
+done
+
+du -sch *

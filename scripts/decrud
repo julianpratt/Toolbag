@@ -1,0 +1,18 @@
+#!/bin/bash
+
+while getopts h flag
+do
+    if [ ${flag} == "h" ]
+    then 
+		echo "decrud - Will remove Apple crud files that store file information that would otherwise go"
+		echo "         into an extended attribute on HFS+ (Apple native) or Unix/UFS volumes. In earlier"
+		echo "         Mac OS this would be the resource fork. Finder file operations will create them"
+		echo "         automatically to store the icon information, plus Time Machine stores some information"
+		echo "         in them so if you copy a file backed up via TM it will have that information copied as well."
+		echo "         Usage: 'decrud'."
+		exit
+    fi
+done
+
+find . -name ".DS_Store" -print0 | xargs -0 rm -rf
+find . -name "._*" -print0 | xargs -0 rm -rf

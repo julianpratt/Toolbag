@@ -1,0 +1,17 @@
+#!/bin/bash
+clear
+echo "Tools to aid brain fade and reduce documentation"
+echo ""
+echo "These tools have all been installed into /usr/local/bin from Toolbag"
+echo "by running the Toolbag/bootstrap script. This is their documentation."
+echo "For more information on each tool use: tool -h (e.g. versions -h)"
+echo ""
+echo "addtool  - install package or command"
+echo "decrud   - remove Apple Finder crud from a folder tree"
+echo "fetch    - use FTP to download a folder from the NAS"
+echo "query    - report on configuration and environment"
+echo "temp     - create or delete a temporary folder"
+echo "treesize - calculates space used by folders in current directory"
+echo "update   - update apt packages"
+echo "versions - check versions of installed packages and/or commands"
+echo ""

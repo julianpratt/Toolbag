@@ -1,0 +1,31 @@
+#!/bin/bash
+
+while getopts h flag
+do
+    if [ ${flag} == "h" ]; then 
+		echo "update - First gets an updated list of apt package versions and then"
+		echo "         does a full upgrade of each package to its latest version."
+		echo "         It then updates all the Toolbag scripts. If used with the"
+		echo "         toolbag parameter (e.g. 'update toolbag'), then it just updates" 
+		echo "         the Toolbag scripts and binaries. It invokes sudo itself."
+		exit
+    fi
+done
+
+if [ "$1" == "toolbag" ]; then
+	echo "Just updating toolbag scripts and binaries"
+else	
+	sudo apt update
+	sudo apt full-upgrade -y
+fi
+
+addtool toolbag addtool   replace
+addtool toolbag decrud    replace
+addtool toolbag fetch     replace
+addtool toolbag query     replace
+addtool toolbag temp      replace		
+addtool toolbag tools     replace		
+addtool toolbag treesize  replace
+addtool toolbag update    replace
+addtool toolbag versions  replace
+addtool toolbag bin       replace
