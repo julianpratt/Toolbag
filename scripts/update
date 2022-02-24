@@ -19,13 +19,14 @@ else
 	sudo apt full-upgrade -y
 fi
 
-addtool toolbag addtool   replace
-addtool toolbag decrud    replace
-addtool toolbag fetch     replace
-addtool toolbag query     replace
-addtool toolbag temp      replace		
-addtool toolbag tools     replace		
-addtool toolbag treesize  replace
-addtool toolbag update    replace
-addtool toolbag versions  replace
-addtool toolbag bin       replace
+if   [ ! command -v git &> /dev/null ]; then
+	echo "Cannot update Toolbag components, git is not available" 
+elif [ ! command -v temp &> /dev/null ]; then
+	echo "Cannot update Toolbag components, temp is not available" 
+else
+	. temp
+    git clone https://github.com/julianpratt/Toolbag
+    chmod +c Toolbag/setup
+    Toolbag/setup
+    temp untemp
+fi    

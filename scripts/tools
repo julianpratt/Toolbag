@@ -1,9 +1,9 @@
 #!/bin/bash
-clear
-echo "Tools to aid brain fade and reduce documentation"
+echo ""
+echo "Toolbag - tools to aid brain fade and reduce documentation"
 echo ""
 echo "These tools have all been installed into /usr/local/bin from Toolbag"
-echo "by running the Toolbag/bootstrap script. This is their documentation."
+echo "by running the Toolbag/setup script. This is their documentation."
 echo "For more information on each tool use: tool -h (e.g. versions -h)"
 echo ""
 echo "addtool  - install package or command"

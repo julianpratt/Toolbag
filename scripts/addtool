@@ -3,11 +3,8 @@
 while getopts h flag
 do
     if [ ${flag} == "h" ]; then 
-		echo "addtool - Will install one of the following: dotnet, java, jmri, vscode, nodejs,"
-		echo "          latex or pandoc. Usage: 'addtool toolname' (e.g. addtool dotnet)."
-		echo ""
-  	echo "          In addition 'addtool toolbag' and 'addtool toolbag replace' will install"
-  	echo "          or update scripts, etc in /usr/local/bin that come from Toolbag."
+			echo "addtool - Will install one of the following: dotnet, java, jmri, vscode, nodejs,"
+			echo "          latex or pandoc. Usage: 'addtool toolname' (e.g. addtool dotnet)."
 		exit
     fi
 done
@@ -109,8 +106,7 @@ elif [ "$1" == "vscode" ]; then
 	fi	
 elif [ "$1" == "nodejs" ]
 then	
-	if ! command -v node &> /dev/null
-	then
+	if [ ! command -v node &> /dev/null ]; then
 		echo "Installing node v15.4. v17 is the latest but CbusServer won't 'npm install' with it."
 		curl -sL https://deb.nodesource.com/setup_15.x | sudo -E bash -
 		sudo apt install -y nodejs
@@ -118,18 +114,14 @@ then
 	else
 		echo "nodejs is already installed"	
 	fi	
-elif [ "$1" == "npm" ]
-then	
-	if ! command -v npm &> /dev/null
-	then
+elif [ "$1" == "npm" ]; then	
+	if [ ! command -v npm &> /dev/null ];	then
 		echo "To install npm use 'addtool nodejs'"
 	else
 		echo "npm is already installed"	
 	fi	
-elif [ "$1" == "latex" ]
-then	
-	if ! command -v pdflatex &> /dev/null
-	then
+elif [ "$1" == "latex" ]; then	
+	if [ ! command -v pdflatex &> /dev/null ]; then
 		sudo apt install texlive
 		sudo apt install texlive-base
 		sudo apt install texlive-latex-recommended
@@ -139,10 +131,8 @@ then
 	else
 		echo "latex is already installed"	
 	fi	
-elif [ "$1" == "pandoc" ]
-then	
-	if ! command -v pandoc &> /dev/null
-	then
+elif [ "$1" == "pandoc" ]; then	
+	if [ ! command -v pandoc &> /dev/null ]; then
 		if [ $(arch) == "x86_64" ]; then 
 			arch="amd64"
 		else
@@ -163,50 +153,7 @@ then
 	else
 		echo "pandoc is already installed"	
 	fi	
-elif [ "$1" == "toolbag" ]
-then	
-	if [ "$2" == "" ]
-	then	
-		echo "When using 'addtool toolbag', you also need to specify the script name (e.g. addtool toolbag versions)."
-		exit
-	fi
-	
-	source="$NAS/Toolbag/scripts"
-	dest=/usr/local/bin
-
-	if [ ! -f "$dest/$2" ]; then
-		echo "$2 not installed. Installing..."
-	elif [ "$3" == "replace" ]; then		
-		echo "$2 installed. Replacing..."
-	else
-		exit
-	fi
-
-	if [ ! "$2" == "bin" ]; then			
-		curl -sL $source/$2 > ~/$2
-		sudo mv ~/$2 $dest/$2
-		sudo chmod +x $dest/$2
-	else
-		. temp
-		mkdir bin
-		mkdir src
-		cd    src
-		wget -q http://$NAS/Toolbag/src/change.c 
-		wget -q http://$NAS/Toolbag/src/datestamp.c 
-		wget -q http://$NAS/Toolbag/src/Makefile
-		wget -q http://$NAS/Toolbag/src/prime.c  
-		wget -q http://$NAS/Toolbag/src/sort.c 
-		wget -q http://$NAS/Toolbag/src/spacetab.c 
-		wget -q http://$NAS/Toolbag/src/tee.c 
-		wget -q http://$NAS/Toolbag/src/waituntil.c 
-		make
-		cd   ../bin
-		sudo mv * $dest
-		temp untemp
-	fi	
-
-elif [ "$1" == "" ]
-then	
+elif [ "$1" == "" ]; then	
 	echo "You need to specify which package or command to install. See addtool -h."
 else
 	echo "Package or command '$1' is not recognised. Use: dotnet, java, vscode or nodejs."	
