@@ -11,3 +11,5 @@ cd    src
 make
 cd   ../bin
 sudo mv * $dest
+cd ..
+rm -r Toolbag
