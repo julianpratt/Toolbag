@@ -180,7 +180,7 @@ elif [ "$1" == "golang" ]; then
 		echo "golang is already installed"	
 	fi	
 elif [ "$1" == "noip2" ]; then
-	if [ ! command -v noip2 &> /dev/null ]; then
+	if [ ! -x "$(command -v noip2)" ]; then
 		echo "noip2 not installed. Installing..."
 		path="https://www.noip.com/client/linux"
 		file="noip-duc-linux.tar.gz"
@@ -189,7 +189,10 @@ elif [ "$1" == "noip2" ]; then
 		tar xf $file
 		rm $file
 		cd noip-2.1.9-1 
+		echo "Ignore the gcc compiler warnings"
 		make
+		echo "Ignore the make install verbiage"
+		echo "Enter email used to login to www.noip.com (with password, '30' and 'N')"
 		sudo make install
 		sudo chmod +x debian.noip2.sh
 		sudo mv debian.noip2.sh /etc/init.d/noip2.sh
