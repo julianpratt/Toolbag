@@ -153,6 +153,56 @@ elif [ "$1" == "pandoc" ]; then
 	else
 		echo "pandoc is already installed"	
 	fi	
+elif [ "$1" == "golang" ]; then	
+	if [ ! command -v go &> /dev/null ]; then
+		if [ $(arch) == "x86_64" ]; then 
+			arch="amd64"
+		else
+			arch="armv6l"
+		fi		 
+		dest=/usr/local
+		golangversion="1.18.1"
+		path="https://go.dev/dl"
+		file="go$golangversion.linux-$arch.tar.gz"
+		. temp
+		wget -q $path/$file 
+		tar xf $file
+		rm $file
+		sudo mv go $dest
+		temp untemp
+		if [ ! grep -q "/usr/local/go/bin" ~/.profile ]; then
+			echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.profile
+		fi	
+		if [ ! grep -q "GOPATH" ~/.profile ]; then
+			echo 'export GOPATH=$HOME/go' >> ~/.profile
+		fi	
+	else
+		echo "golang is already installed"	
+	fi	
+elif [ "$1" == "noip2" ]; then
+	if [ ! command -v noip2 &> /dev/null ]; then
+		echo "noip2 not installed. Installing..."
+		path="https://www.noip.com/client/linux"
+		file="noip-duc-linux.tar.gz"
+		. temp
+		wget -q $path/$file 
+		tar xf $file
+		rm $file
+		cd noip-2.1.9-1 
+		make
+		sudo make install
+		sudo chmod +x debian.noip2.sh
+		sudo mv debian.noip2.sh /etc/init.d/noip2.sh
+		cd /etc/rc3.d
+		sudo ln -s ../init.d/noip2.sh S01noip2
+		cd /etc/rc5.d
+		sudo ln -s ../init.d/noip2.sh S01noip2
+		temp untemp
+	else
+		echo "noip2 is already installed"	
+	fi	
+
+
 elif [ "$1" == "" ]; then	
 	echo "You need to specify which package or command to install. See addtool -h."
 else
