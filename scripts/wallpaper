@@ -1,0 +1,31 @@
+#!/bin/bash
+
+while getopts h flag
+do
+    if [ ${flag} == "h" ]
+    then 
+		echo "wallpaper - copy latest Bing Wallpaper images - specify drive and folder to copy to."
+        echo "            e.g. 'wallpaper j wallpaper'" 
+		exit
+    fi
+done
+
+if [ "$1" == "" ] || [ "$2" == "" ]
+then
+    echo "Error: Please specify drive and/or folder to copy wallpaper images to."    
+else
+    if [ ! -d "/mnt/$1" ] 
+    then
+        sudo mkdir /mnt/$1
+        del="yes"
+    else
+        del="no"    
+    fi
+    sudo mount -t drvfs $1: /mnt/$1
+    cp -u /mnt/c/Users/$USER/AppData/Local/Microsoft/BingWallpaperApp/WPImages/*.jpg /mnt/$1/$2    
+    sudo umount $1:
+    if [ "$del" == "yes" ] 
+    then
+        sudo rmdir /mnt/$1
+    fi    
+fi
