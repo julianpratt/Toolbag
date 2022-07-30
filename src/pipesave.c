@@ -1,6 +1,6 @@
-/* tee.c                                                              */
+/* pipesave.c                                                         */
 /* a program to read standard in and write to standard out and a file */
-/* thus duplicating the input                                         */
+/* thus duplicating the input (should use built in tee instead!)      */
 
 #include <stdio.h>
 #include <stdlib.h>

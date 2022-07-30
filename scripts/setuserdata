@@ -1,0 +1,24 @@
+#!/bin/bash
+
+while getopts h flag
+do
+    if [ ${flag} == "h" ]; then 
+			echo "setuserdata - Will set data in the GECOS field of /etc/passwd"
+			echo "              Usage: 'setuserdata LOGIN NAME EMAIL'"
+			echo "              where: LOGIN is the login of the user"
+			echo "                     NAME is the name of the user (i.e. first name and surname)"
+			echo "                     EMAIL is the emal address of the user"
+			echo "                     (e.g. setuserdata julian \"Julian Pratt\" \"julian.pratt@me.com\")."
+		exit
+    fi
+done
+
+if   [ "$1" == "" ]; then	
+	echo "You need to specify the login of the user. See setuserdata -h."
+elif [ "$2" == "" ]; then	
+	echo "You need to specify the name of the user. See setuserdata -h."
+elif [ "$3" == "" ]; then	
+	echo "You need to specify the email address of the user. See setuserdata -h."
+else
+	sudo chfn $1 -f "$2" -o "$3"
+fi

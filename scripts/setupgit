@@ -1,0 +1,24 @@
+#!/bin/bash
+
+while getopts h flag
+do
+    if [ ${flag} == "h" ]; then 
+			echo "setupgit - Will configure git with the name and email from GECOS fields in /etc/passwd"
+			echo "           and append an export to ~/.profile to set GITPAT (needs Dev/gitpat.txt)"
+			echo "           Usage: 'setuserdata \$USER \"name\" \"email\""
+			echo "                  'setupgit'"
+		exit
+    fi
+done
+
+if   [ "$(getuserdata $USER name)" == "" ]; then
+	echo "name missing from GECOS fields, use setuserdata"
+elif [ "$(getuserdata $USER email)" == "" ]; then
+	echo "email missing from GECOS fields, use setuserdata"
+elif [ "$(cat Dev/gitpat.txt)" == "" ]; then
+	echo "gitpat.txt missing"
+else
+	git config --global user.name  "$(getuserdata $USER name)" 	
+  git config --global user.email "$(getuserdata $USER email)" 	
+	echo "export GITPAT=$(cat Dev/gitpat.txt)" >> ~/.profile
+fi

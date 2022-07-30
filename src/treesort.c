@@ -1,8 +1,5 @@
 /***********************************************************************/
-/* SORTX - Extended Sort. Uses homegrown btree to sort a linked        */
-/*         list. If linked list required exceeds memory available a    */
-/*         sort of that which will fit is done, then the resultant     */
-/*         merged at the end.                                          */
+/* TREESORT - Uses homegrown btree to sort a linked list.              */
 /***********************************************************************/
 #include <stdio.h>
 #include <string.h>
