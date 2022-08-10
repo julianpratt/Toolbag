@@ -1,0 +1,46 @@
+#!/bin/bash
+
+while getopts h flag
+do
+    if [ ${flag} == "h" ]
+    then 
+		echo "publish - update the destination Publish folder from the source Publish folder."
+        echo "          Specify source and destination drives: e.g 'publish j z', where j is" 
+        echo "          source and z is destination." 
+		exit
+    fi
+done
+
+if [ "$1" == "" ] || [ "$2" == "" ]
+then
+    echo "Error: Please specify source and destination drives."    
+else
+    if [ ! -d "/mnt/$1" ] 
+    then
+        sudo mkdir /mnt/$1
+        dels="yes"
+    else
+        dels="no"    
+    fi
+    if [ ! -d "/mnt/$2" ] 
+    then
+        sudo mkdir /mnt/$2
+        deld="yes"
+    else
+        deld="no"    
+    fi
+    sudo mount -t drvfs $1: /mnt/$1
+    sudo mount -t drvfs $2: /mnt/$2
+    cp -u -r /mnt/$1/Publish/* /mnt/$2/Publish    
+    sudo umount $1:
+    sudo umount $2:
+    if [ "$dels" == "yes" ] 
+    then
+        sudo rmdir /mnt/$1
+    fi    
+    if [ "$deld" == "yes" ] 
+    then
+        sudo rmdir /mnt/$2
+    fi    
+
+fi
