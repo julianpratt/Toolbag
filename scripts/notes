@@ -22,7 +22,7 @@ else
         del="no"    
     fi
     sudo mount -t drvfs $1: /mnt/$1
-    rsync -rlpDv /mnt/c/Users/$USER/iCloudDrive/iCloud~md~obsidian/Notes /mnt/$1/Notes    
+    rsync -crlpDvA --no-perms --delete --exclude=".*" /mnt/c/Users/$USER/iCloudDrive/iCloud~md~obsidian/Notes /mnt/$1/Notes    
     sudo umount $1:
     if [ "$del" == "yes" ] 
     then
