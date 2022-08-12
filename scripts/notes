@@ -4,7 +4,7 @@ while getopts h flag
 do
     if [ ${flag} == "h" ]
     then 
-		echo "notes - replicate latest notes - specify drive that has secondary copy."
+		echo "notes - Synchronise latest notes - specify drive that has secondary copy."
         echo "        e.g. 'notes j'"
 		exit
     fi
@@ -22,7 +22,7 @@ else
         del="no"    
     fi
     sudo mount -t drvfs $1: /mnt/$1
-    cp -u -r /mnt/c/Users/$USER/iCloudDrive/iCloud~md~obsidian/Notes/* /mnt/$1/Notes    
+    rsync -rlptDv /mnt/c/Users/$USER/iCloudDrive/iCloud~md~obsidian/Notes /mnt/$1/Notes    
     sudo umount $1:
     if [ "$del" == "yes" ] 
     then
