@@ -29,9 +29,9 @@ elif [ "$1" == "java" ]; then
 elif [ "$1" == "jmri" ]; then
 	dest=/opt 
 	if [ ! -d $dest/JMRI ]; then
-		echo "JMRI not installed. Installing v4.26... (v5 due summer 2022)"
-		path="https://github.com/JMRI/JMRI/releases/download/v4.26"
-		file="JMRI.4.26+R381c8dfc32.tgz"
+		echo "JMRI not installed. Installing v5.0..."
+		path="https://github.com/JMRI/JMRI/releases/download/v5.0"
+		file="JMRI.5.0+Rc441642522.tgz"
 		localbin=/usr/local/bin
 		. temp
 		wget -q $path/$file 
