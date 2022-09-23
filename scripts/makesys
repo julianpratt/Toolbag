@@ -47,5 +47,6 @@ WantedBy=multi-user.target
 EOF
 
 sudo mv $name.service /lib/systemd/system
+sudo chmod 644 /lib/systemd/system/$name.service
 sudo systemctl enable $name
 sudo systemctl start  $name
