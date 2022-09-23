@@ -39,52 +39,12 @@ elif [ "$1" == "jmri" ]; then
 		rm $file
 		sudo mv JMRI $dest
 
-		cat > panelpro << EOF		
-#!/bin/bash
-
-if [ ! -d /opt/JMRI ]; then
-  echo "JMRI is not installed!"
-else
-  cd /opt/JMRI
-  ./PanelPro
-fi  
-EOF
-
-		cat > decoderpro << EOF		
-#!/bin/bash
-
-if [ ! -d /opt/JMRI ]; then
-  echo "JMRI is not installed!"
-else
-  cd /opt/JMRI
-  ./DecoderPro
-fi  
-EOF
-		chmod +x panelpro
-		chmod +x decoderpro
-		sudo mv panelpro   $localbin
-		sudo mv decoderpro $localbin
-
-		cat > ~/Desktop/PanelPro.desktop << EOF
-[Desktop Entry]
-Encoding=UTF-8
-Name=JMRI Panel Pro
-Comment=Start JMRI PanelPro
-Exec=panelpro
-Icon=/opt/JMRI/resources/PanelPro.gif
-Terminal=false
-Type=Application
-Categories=Utility
-X-KeepTerminal=false
-StartupNotify=false
-EOF
-		if [ ! -d ~/.config/autostart ]; then
-			mkdir ~/.config/autostart
-		fi	
-		ln -s ~/Desktop/PanelPro.desktop ~/.config/autostart/PanelPro.desktop
+		shortcut decoderpro /opt/JMRI DecoderPro
+		shortcut panelpro   /opt/JMRI PanelPro
+		desktop -a panelpro "JMRI Panel Pro" "/opt/JMRI/resources/PanelPro.gif"
 
 		echo "JMRI PanelPro will autostart on reboot."
-		echo "To avoid popup options when using PanelPro.desktop,"
+		echo "To avoid popup options when using panelpro.desktop,"
 		echo "set 'Do not ask options on launch executable file' to true"
 		echo "in File Manager, Edit, Preferences, General."
 
@@ -106,7 +66,7 @@ elif [ "$1" == "vscode" ]; then
 	fi	
 elif [ "$1" == "nodejs" ]
 then	
-	if [ ! command -v node &> /dev/null ]; then
+	if [ ! -x "$(command -v node)" ]; then
 		echo "Installing node v15.4. v17 is the latest but CbusServer won't 'npm install' with it."
 		curl -sL https://deb.nodesource.com/setup_15.x | sudo -E bash -
 		sudo apt install -y nodejs

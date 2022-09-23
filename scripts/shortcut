@@ -1,0 +1,51 @@
+#!/bin/bash
+
+usage() {
+cat << EOF  
+shortcut - Will create a shortcut in /usr/local/bin to execute a command.
+           Usage: 'shortcut name folder command'
+           e.g.   shortcut panelpro PanelPro /opt/JMRI
+           where: name is the name of the script file that will be created
+                  folder is the folder the command is to be executed in  
+                  command is the command to be executed in folder 
+           n.b. because the command is assumed to be in the folder ./ is
+                put in front of it.
+EOF
+}
+
+while getopts h flag
+do
+    if [ ${flag} == "h" ]; then 
+    	usage
+		  exit
+    fi
+done
+
+if [ "$1" == "" ]; then	
+	echo "You need to specify the name of the script to be created. See shortcut -h."
+	exit
+elif [ "$2" == "" ]; then	
+	echo "You need to specify the folder the command is to be executed in. See shortcut -h."
+	exit
+elif [ "$3" == "" ]; then	
+	echo "You need to specify the command to be executed. See shortcut -h."
+	exit
+fi
+
+name="$1"
+folder="$2"
+command="$3"
+
+
+cat > $name << EOF		
+#!/bin/bash
+
+if [ ! -d $folder ]; then
+  echo "$folder cannot be found!"
+else
+  cd $folder
+  ./$command
+fi  
+EOF
+chmod +x $name
+sudo mv $name /usr/local/bin

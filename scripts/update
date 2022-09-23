@@ -1,13 +1,19 @@
 #!/bin/bash
 
+usage() {
+cat << EOF  
+update - First gets an updated list of apt package versions and then
+         does a full upgrade of each package to its latest version.
+         It then updates all the Toolbag scripts. If used with the
+         toolbag parameter (e.g. 'update toolbag'), then it just updates 
+         the Toolbag scripts and binaries. It invokes sudo itself.
+EOF
+}
+
 while getopts h flag
 do
     if [ ${flag} == "h" ]; then 
-		echo "update - First gets an updated list of apt package versions and then"
-		echo "         does a full upgrade of each package to its latest version."
-		echo "         It then updates all the Toolbag scripts. If used with the"
-		echo "         toolbag parameter (e.g. 'update toolbag'), then it just updates" 
-		echo "         the Toolbag scripts and binaries. It invokes sudo itself."
+    	usage
 		exit
     fi
 done

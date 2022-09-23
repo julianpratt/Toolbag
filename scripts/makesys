@@ -1,0 +1,51 @@
+#!/bin/bash
+
+usage() {
+cat << EOF  
+makesys - Will setup a systemd service to run a command.
+          Usage: 'makesys name folder command'
+          e.g.   makesys testservice /usr/local/bin testservice
+EOF
+}
+
+while getopts h flag
+do
+    if [ ${flag} == "h" ]; then 
+    	usage
+		exit
+    fi
+done
+
+if [ "$1" == "" ]; then	
+	echo "You need to specify the name of the systemd service. See makesys -h."
+	exit
+elif [ "$2" == "" ]; then	
+	echo "You need to specify the name of the application. See makesys -h."
+	exit
+elif [ "$3" == "" ]; then	
+	echo "You need to specify which command the shortcut will execute. See makesys -h."
+	exit
+fi
+
+name="$1"
+folder="$2"
+command="$3"
+
+sudo cat >$name.service << EOF
+[Unit]
+Description=service $name
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5s
+WorkingDirectory=$folder
+ExecStart=$command
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+sudo mv $name.service /lib/systemd/system
+sudo systemctl enable $name
+sudo systemctl start  $name

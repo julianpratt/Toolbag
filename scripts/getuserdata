@@ -1,18 +1,23 @@
 #!/bin/bash
 
-while getopts h flag
-do
+usage() {
+cat << EOF  
+getuserdata - Will output data from the GECOS field of /etc/passwd
+              Usage: 'getuserdata LOGIN FIELD'
+              where: FIELD is either 'name' or 'email'
+                     (e.g. getuserdata \$USER name).
+EOF
+}
+
+while getopts h flag; do
     if [ ${flag} == "h" ]; then 
-			echo "getuserdata - Will output data from the GECOS field of /etc/passwd"
-			echo "              Usage: 'getuserdata LOGIN FIELD'"
-			echo "              where: FIELD is either 'name' or 'email'"
-			echo "                     (e.g. getuserdata \$USER name)."
+    	usage
 		exit
     fi
 done
 
 if [ "$1" == "" ]; then	
-	echo "You need to specify the user. See getuserdata -h."
+	echo "You need to specify the user and field ('name' or 'email'). See getuserdata -h."
 	exit	
 fi
 
@@ -21,5 +26,5 @@ if [ "$2" == "name" ]; then
 elif [ "$2" == "email" ]; then
 	getent passwd "$1" | awk -F: '{print $5}' | awk -F, '{print $5}'  
 else
-	echo "You need to specify either 'name' or 'email'. See getuserdata -h."
+	echo "You need to specify either 'name' or 'email' as second parameter. See getuserdata -h."
 fi

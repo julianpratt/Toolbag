@@ -1,0 +1,13 @@
+#!/bin/bash
+
+if [ $(arch) == "x86_64" ]; then 
+	arch="amd64"
+else
+	arch="arm64"
+fi		
+
+if [ "$1" != "" ] && [ "$arch" == "arm64" ]; then
+	arch="$1"
+fi
+
+echo "$arch"	
