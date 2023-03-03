@@ -31,9 +31,9 @@ else
     fi
     sudo mount -t drvfs $1: /mnt/$1
     sudo mount -t drvfs $2: /mnt/$2
-    cp -u -r /mnt/$1/Publish/* /mnt/$2/Publish    
-    sudo umount $1:
-    sudo umount $2:
+    cp -u -r /mnt/$1/Publish/* /mnt/$2/Publish 
+    sudo umount /mnt/$1
+    sudo umount /mnt/$2   
     if [ "$dels" == "yes" ] 
     then
         sudo rmdir /mnt/$1

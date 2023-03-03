@@ -23,7 +23,7 @@ else
     fi
     sudo mount -t drvfs $1: /mnt/$1
     rsync -crlpDvA --no-perms --delete --exclude=".*" /mnt/c/Users/$USER/iCloudDrive/iCloud~md~obsidian/Notes /mnt/$1    
-    sudo umount $1:
+    sudo umount /mnt/$1
     if [ "$del" == "yes" ] 
     then
         sudo rmdir /mnt/$1

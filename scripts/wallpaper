@@ -23,7 +23,7 @@ else
     fi
     sudo mount -t drvfs $1: /mnt/$1
     cp -u /mnt/c/Users/$USER/AppData/Local/Microsoft/BingWallpaperApp/WPImages/*.jpg /mnt/$1/$2    
-    sudo umount $1:
+    sudo umount /mnt/$1
     if [ "$del" == "yes" ] 
     then
         sudo rmdir /mnt/$1

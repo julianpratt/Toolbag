@@ -1,58 +1,93 @@
 #!/bin/bash
 
-while getopts h flag
-do
+usage() {
+cat << EOF  
+addtool - Will install one of the following: dotnet, java, jmri, vscode, nodejs,
+          latex, pandoc, golang or noip2. 
+          Usage: 'addtool toolname' (e.g. addtool dotnet).
+EOF
+}
+
+wget_tar() {
+	path="$1"
+	file="$2" 
+	folder="$3" 
+	dest="$4" 
+	. temp
+	wget -q $path/$file 
+	tar xf $file
+	rm $file
+
+	sudo mv $folder $dest
+	temp untemp
+}
+
+update_profile() {
+	test="$1"
+	text="$2"
+	if [ ! grep -q "$test" ~/.profile ]; then
+		echo '$text' >> ~/.profile
+  fi	
+}
+
+while getopts h flag; do
     if [ ${flag} == "h" ]; then 
-			echo "addtool - Will install one of the following: dotnet, java, jmri, vscode, nodejs,"
-			echo "          latex or pandoc. Usage: 'addtool toolname' (e.g. addtool dotnet)."
-		exit
+    	usage
+		  exit
     fi
 done
 
-if [ "$1" == "dotnet" ]; then
-	if [ ! command -v dotnet &> /dev/null ]; then
-		echo "dotnet not installed. Installing..."
-		wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
-		sudo dpkg -i packages-microsoft-prod.deb
-
-		sudo apt-get update; sudo apt-get install -y apt-transport-https && sudo apt-get update && sudo apt-get install -y dotnet-sdk-5.0
-	else
-		echo "dotnet is already installed"	
-	fi	
-elif [ "$1" == "java" ]; then
-	if [ ! command -v java &> /dev/null ]; then
-		echo "java not installed. Installing openjdk-11... (n.b. v17 is latest LTS)"
-		sudo apt install -y openjdk-11-jdk
-	else
-		echo "java is already installed"	
-	fi	
-elif [ "$1" == "jmri" ]; then
-	dest=/opt 
-	if [ ! -d $dest/JMRI ]; then
-		echo "JMRI not installed. Installing v5.0..."
-		path="https://github.com/JMRI/JMRI/releases/download/v5.0"
-		file="JMRI.5.0+Rc441642522.tgz"
-		localbin=/usr/local/bin
-		. temp
-		wget -q $path/$file 
-		tar xf $file
-		rm $file
-		sudo mv JMRI $dest
-
-		shortcut decoderpro /opt/JMRI DecoderPro
-		shortcut panelpro   /opt/JMRI PanelPro
-		desktop -a panelpro "JMRI Panel Pro" "/opt/JMRI/resources/PanelPro.gif"
-
-		echo "JMRI PanelPro will autostart on reboot."
-		echo "To avoid popup options when using panelpro.desktop,"
-		echo "set 'Do not ask options on launch executable file' to true"
-		echo "in File Manager, Edit, Preferences, General."
-
-		temp untemp
-
-	else
+command="$1"
+if   [ "$command" == "jmri" ]; then
+	if [ -d $/opt/JMRI ]; then
 		echo "JMRI is already installed"	
-	fi		
+		exit
+	fi
+else		
+  if   [ "$1" == "vscode" ]; then
+	  command="code"
+  elif [ "$1" == "latex" ]; then	  
+	  command="pdflatex"
+	elif [ "$1" == "nodejs" ]; then	  
+	  command="node"  
+	elif [ "$1" == "golang" ]; then	  
+	  command="go"  
+	elif [ "$1" == "" ]; then	
+	  echo "You need to specify which package or command to install. See addtool -h."
+    exit
+	fi
+	if [ -x "$(command -v $command)" ]; then
+		echo "$1 is already installed"	  
+		exit
+	fi
+fi	
+
+
+if [ "$1" == "dotnet" ]; then
+	echo "dotnet not installed. Installing..."
+	wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+	sudo dpkg -i packages-microsoft-prod.deb
+	sudo apt-get update; sudo apt-get install -y apt-transport-https && sudo apt-get update && sudo apt-get install -y dotnet-sdk-5.0
+
+elif [ "$1" == "java" ]; then
+	echo "java not installed. Installing openjdk-11... (n.b. v17 is latest LTS)"
+	sudo apt install -y openjdk-11-jdk
+
+elif [ "$1" == "jmri" ]; then
+	echo "JMRI not installed. Installing v5.0..."
+	path="https://github.com/JMRI/JMRI/releases/download/v5.0"
+	file="JMRI.5.0+Rc441642522.tgz"
+
+	wget_tar $path $file "JMRI" "/opt"
+	shortcut decoderpro $dest/JMRI DecoderPro
+	shortcut panelpro   $dest/JMRI PanelPro
+	desktop -a panelpro "JMRI Panel Pro" "/opt/JMRI/resources/PanelPro.gif"
+
+	echo "JMRI PanelPro will autostart on reboot."
+	echo "To avoid popup options when using panelpro.desktop,"
+	echo "set 'Do not ask options on launch executable file' to true"
+	echo "in File Manager, Edit, Preferences, General."
+
 elif [ "$1" == "vscode" ]; then
 	if [ ! command -v code &> /dev/null ]; then
 		sudo apt update
@@ -64,110 +99,57 @@ elif [ "$1" == "vscode" ]; then
 	else
 		echo "vscode is already installed (it can be upgraded with 'addtool vscode upgrade')"	
 	fi	
-elif [ "$1" == "nodejs" ]
-then	
-	if [ ! -x "$(command -v node)" ]; then
-		echo "Installing node v15.4. v17 is the latest but CbusServer won't 'npm install' with it."
-		curl -sL https://deb.nodesource.com/setup_15.x | sudo -E bash -
-		sudo apt install -y nodejs
-		echo "Use versions command to report which node and npm versions are installed."
-	else
-		echo "nodejs is already installed"	
-	fi	
+
+elif [ "$1" == "nodejs" ]; then	
+	echo "Installing node v15.4. v17 is the latest but CbusServer won't 'npm install' with it."
+	curl -sL https://deb.nodesource.com/setup_15.x | sudo -E bash -
+	sudo apt install -y nodejs
+	echo "Use versions command to report which node and npm versions are installed."
+
 elif [ "$1" == "npm" ]; then	
-	if [ ! command -v npm &> /dev/null ];	then
-		echo "To install npm use 'addtool nodejs'"
-	else
-		echo "npm is already installed"	
-	fi	
+	echo "To install npm use 'addtool nodejs'"
+
 elif [ "$1" == "latex" ]; then	
-	if [ ! command -v pdflatex &> /dev/null ]; then
-		sudo apt install texlive
-		sudo apt install texlive-base
-		sudo apt install texlive-latex-recommended
-		sudo apt install texlive-latex-extra
-		sudo apt install texlive-fonts-recommended
-		sudo apt install texlive-fonts-extra
-	else
-		echo "latex is already installed"	
-	fi	
+	sudo apt install texlive texlive-base texlive-latex-recommended texlive-latex-extra
+	sudo apt install texlive-fonts-recommended texlive-fonts-extra
+
 elif [ "$1" == "pandoc" ]; then	
-	if [ ! command -v pandoc &> /dev/null ]; then
-		if [ $(arch) == "x86_64" ]; then 
-			arch="amd64"
-		else
-			arch="arm64"
-		fi		 
-		dest=/opt
-		pandocversion="2.17.1.1"
-		path="https://github.com/jgm/pandoc/releases/download/$pandocversion"
-		file="pandoc-$pandocversion-linux-$arch.tar.gz"
-		localbin=/usr/local/bin
-		. temp
-		wget -q $path/$file 
-		tar xf $file
-		rm $file
-		cd "pandoc-$pandocversion/bin"
-		sudo mv pandoc $localbin
-		temp untemp
-	else
-		echo "pandoc is already installed"	
-	fi	
+	pandocversion="2.17.1.1"
+	path="https://github.com/jgm/pandoc/releases/download/$pandocversion"
+	file="pandoc-$pandocversion-linux-$(whatarch).tar.gz"
+
+	wget_tar $path $file pandoc /usr/local/bin
+
 elif [ "$1" == "golang" ]; then	
-	if [ ! command -v go &> /dev/null ]; then
-		if [ $(arch) == "x86_64" ]; then 
-			arch="amd64"
-		else
-			arch="armv6l"
-		fi		 
-		dest=/usr/local
-		golangversion="1.18.1"
-		path="https://go.dev/dl"
-		file="go$golangversion.linux-$arch.tar.gz"
-		. temp
-		wget -q $path/$file 
-		tar xf $file
-		rm $file
-		sudo mv go $dest
-		temp untemp
-		if [ ! grep -q "/usr/local/go/bin" ~/.profile ]; then
-			echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.profile
-		fi	
-		if [ ! grep -q "GOPATH" ~/.profile ]; then
-			echo 'export GOPATH=$HOME/go' >> ~/.profile
-		fi	
-	else
-		echo "golang is already installed"	
-	fi	
+	golangversion="1.18.1"
+	path="https://go.dev/dl"
+	file="go$golangversion.linux-$(whatarch armv61).tar.gz"
+	
+	wget_tar $path $file "go" "/usr/local"
+	update_profile "/usr/local/go/bin" 'export PATH=$PATH:/usr/local/go/bin'
+	update_profile "GOPATH" 'export GOPATH=$HOME/go'
+
 elif [ "$1" == "noip2" ]; then
-	if [ ! -x "$(command -v noip2)" ]; then
-		echo "noip2 not installed. Installing..."
-		path="https://www.noip.com/client/linux"
-		file="noip-duc-linux.tar.gz"
-		. temp
-		wget -q $path/$file 
-		tar xf $file
-		rm $file
-		cd noip-2.1.9-1 
-		echo "Ignore the gcc compiler warnings"
-		make
-		echo "Ignore the make install verbiage"
-		echo "Enter email used to login to www.noip.com (with password, '30' and 'N')"
-		sudo make install
-		sudo chmod +x debian.noip2.sh
-		sudo mv debian.noip2.sh /etc/init.d/noip2.sh
-		cd /etc/rc3.d
-		sudo ln -s ../init.d/noip2.sh S01noip2
-		cd /etc/rc5.d
-		sudo ln -s ../init.d/noip2.sh S01noip2
-		temp untemp
-	else
-		echo "noip2 is already installed"	
-	fi	
+	echo "noip2 not installed. Installing..."
+	path="https://www.noip.com/client/linux"
+	file="noip-duc-linux.tar.gz"
+	. temp
+	wget -q $path/$file 
+	tar xf $file
+	rm $file
+	cd noip-2.1.9-1 
+	make CC="gcc -w" -s
+	echo "Ignore the make install verbiage"
+	echo "Enter email used to login to www.noip.com (with password, '30' and 'N')"
+	sudo make install
+	sudo chmod +x debian.noip2.sh
+	sudo mv debian.noip2.sh /etc/init.d/noip2.sh
+	cd /etc/rc3.d
+	sudo ln -s ../init.d/noip2.sh S01noip2
+	cd /etc/rc5.d
+	sudo ln -s ../init.d/noip2.sh S01noip2
+	temp untemp
 
-
-elif [ "$1" == "" ]; then	
-	echo "You need to specify which package or command to install. See addtool -h."
 else
 	echo "Package or command '$1' is not recognised. Use: dotnet, java, vscode or nodejs."	
 fi
