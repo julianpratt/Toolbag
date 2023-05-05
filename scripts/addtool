@@ -75,8 +75,8 @@ elif [ "$1" == "java" ]; then
 
 elif [ "$1" == "jmri" ]; then
 	echo "JMRI not installed. Installing v5.0..."
-	path="https://github.com/JMRI/JMRI/releases/download/v5.0"
-	file="JMRI.5.0+Rc441642522.tgz"
+	path="https://github.com/JMRI/JMRI/releases/download/v5.3.5"
+	file="JMRI.5.3.5+Rff6cfe01dc.tgz"
 
 	wget_tar $path $file "JMRI" "/opt"
 	shortcut decoderpro $dest/JMRI DecoderPro
