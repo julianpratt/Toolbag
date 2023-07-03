@@ -74,9 +74,9 @@ elif [ "$1" == "java" ]; then
 	sudo apt install -y openjdk-11-jdk
 
 elif [ "$1" == "jmri" ]; then
-	echo "JMRI not installed. Installing v5.3.5..."
-	path="https://github.com/JMRI/JMRI/releases/download/v5.3.5"
-	file="JMRI.5.3.5+Rff6cfe01dc.tgz"
+	echo "JMRI not installed. Installing v5.4..."
+	path="https://github.com/JMRI/JMRI/releases/download/v5.4"
+	file="JMRI.5.4+R9005ecb4ac.tgz"
 
 	wget_tar $path $file "JMRI" "/opt"
 	shortcut decoderpro "/opt/JMRI" DecoderPro
@@ -130,6 +130,7 @@ elif [ "$1" == "golang" ]; then
 	update_profile "GOPATH" 'export GOPATH=$HOME/go'
 
 elif [ "$1" == "mono" ]; then	
+	# From https://www.mono-project.com/download/stable/#download-lin-raspbian
 	sudo apt install dirmngr ca-certificates gnupg
 	sudo gpg --homedir /tmp --no-default-keyring --keyring /usr/share/keyrings/mono-official-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
 	echo "deb [signed-by=/usr/share/keyrings/mono-official-archive-keyring.gpg] https://download.mono-project.com/repo/debian stable-raspbianbuster main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list
