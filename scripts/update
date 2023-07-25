@@ -19,7 +19,7 @@ do
 done
 
 if [ "$1" == "toolbag" ]; then
-	echo "Just updating toolbag scripts and binaries"
+	echo "Just updating toolbag scripts"
 else	
 	sudo apt update
 	sudo apt full-upgrade -y

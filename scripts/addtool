@@ -3,7 +3,7 @@
 usage() {
 cat << EOF  
 addtool - Will install one of the following: dotnet, java, jmri, vscode, nodejs,
-          latex, pandoc, golang, dropbox or noip2. 
+          latex, pandoc, golang, mono, cprogs or noip2. 
           Usage: 'addtool toolname' (e.g. addtool dotnet).
 EOF
 }
@@ -136,6 +136,38 @@ elif [ "$1" == "mono" ]; then
 	echo "deb [signed-by=/usr/share/keyrings/mono-official-archive-keyring.gpg] https://download.mono-project.com/repo/debian stable-raspbianbuster main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list
 	sudo apt update
 	sudo apt install mono-complete
+
+elif [ "$1" == "cprogs" ]; then	
+	dest=/usr/local/bin
+
+	sudo apt update
+	sudo apt full-upgrade -y
+	sudo apt install -y git make gcc
+
+  git clone https://github.com/julianpratt/Toolbag
+
+  if [ ! -d Toolbag ]; then 
+	  echo "failed to clone Toolbag repo from GitHub"
+  elif [ ! -d Toolbag/src ]; then 	
+	  echo "src folder missing from Toolbag, I cannot proceed"	
+  elif [ ! -d "$dest" ]; then 	
+	  echo "'$dest' folder missing, I cannot proceed"		
+	elif [ ! command -v make &> /dev/null ]; then
+		echo "Cannot install C executables, make command is not available" 
+	elif [ ! command -v gcc  &> /dev/null ]; then
+		echo "Cannot install C executables, gcc command is not available" 
+  else
+	  cd Toolbag
+		if [ ! -d bin ]; then 
+			mkdir bin	# Ready for the executables
+		fi
+		cd src
+		make
+		cd ../bin
+		sudo mv * $dest
+		cd ../..
+	fi
+	rm -rf Toolbag
 
 elif [ "$1" == "noip2" ]; then
 	echo "noip2 not installed. Installing..."

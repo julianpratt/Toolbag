@@ -8,8 +8,6 @@ if [ ! -d Toolbag ]; then
 	echo "setup must be run from the parent of Toolbag"
 elif [ ! -d Toolbag/scripts ]; then 	
 	echo "scripts folder missing from Toolbag, I cannot proceed"	
-elif [ ! -d Toolbag/src ]; then 	
-	echo "src folder missing from Toolbag, I cannot proceed"	
 elif [ ! -d "$dest" ]; then 	
 	echo "'$dest' folder missing, I cannot proceed"		
 else
@@ -18,21 +16,6 @@ else
 	cd scripts
 	chmod +x *	# scripts come down from github without the execute permission set 
 	sudo mv * $dest
-	cd ..
-	# Install C executables, after first building them
-	if   [ ! command -v make &> /dev/null ]; then
-		echo "Cannot install C executables, make command is not available" 
-	elif [ ! command -v gcc  &> /dev/null ]; then
-		echo "Cannot install C executables, gcc command is not available" 
-	else	
-		if [ ! -d bin ]; then 
-			mkdir bin	# Ready for the executables
-		fi
-		cd src
-		make
-		cd ../bin
-		sudo mv * $dest
-		cd ../..
-	fi
+	cd ../..
 	rm -rf Toolbag
 fi
