@@ -1,0 +1,30 @@
+#!/bin/bash
+
+while getopts h flag
+do
+    if [ ${flag} == "h" ]
+    then 
+		echo "pull - use rclone to synchronise a folder from Drive or Dropbox."
+        echo "       Drive and Dropbox must be configured as rclone remotes"
+        echo "       i.e. drive: and dropbox:. Thus: 'pull remote folder',"
+        echo "       expands to rclone sync remote:folder folder."
+        echo "       It is assumed that the folder has the same name on both"
+        echo "       remote and local filesystems."        
+		exit
+    fi
+done
+
+if [ "${#2}" == 0 ]; then
+    echo "Folder omitted, e.g. pull remote folder"
+    exit
+fi  
+
+if [ "${#1}" == 0 ]; then
+    echo "Remote omitted, e.g. pull remote folder"
+    exit
+fi  
+
+remote="$1" 
+folder="$2" 
+
+rclone sync $remote:$folder $folder
