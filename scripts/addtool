@@ -69,7 +69,7 @@ if [ "$1" == "dotnet" ]; then
 	echo "dotnet not installed. Installing..."
 	dest=/usr/local/bin
 	cd ~
-	wget https://dot.net/vx/dotnet-install.sh -O ~/dotnet-install
+	wget https://dot.net/v1/dotnet-install.sh -O ~/dotnet-install
 	if [ ! -f ~/dotnet-install ]; then
 		echo "Failed to download dotnet install script from https://dot.net - check MS documentation!"
 		exit	
