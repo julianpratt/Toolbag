@@ -68,9 +68,14 @@ fi
 if [ "$1" == "dotnet" ]; then
 	echo "dotnet not installed. Installing..."
 	dest=/usr/local/bin
-	wget https://dot.net/v1/dotnet-install.sh -O ./dotnet-install
-	chmod +x ./dotnet-install
-	sudo mv dotnet-install $dest
+	cd ~
+	wget https://dot.net/vx/dotnet-install.sh -O ~/dotnet-install
+	if [ ! -f ~/dotnet-install ]; then
+		echo "Failed to download dotnet install script from https://dot.net - check MS documentation!"
+		exit	
+	fi
+	chmod +x ~/dotnet-install
+	sudo mv ~/dotnet-install $dest
 	dotnet-install
 	
 	#wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
