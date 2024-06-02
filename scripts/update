@@ -32,7 +32,7 @@ if   [ ! command -v git &> /dev/null ]; then
 elif [ ! command -v temp &> /dev/null ]; then
 	echo "Cannot update Toolbag components, temp is not available" 
 else
-	. temp
+    . temp
     git clone https://github.com/julianpratt/Toolbag
     chmod +x Toolbag/setup
     Toolbag/setup

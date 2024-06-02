@@ -1,0 +1,16 @@
+#!/bin/bash
+
+while getopts h flag
+do
+    if [ ${flag} == "h" ]; then 
+			echo "toolsinit - Will setup Toolbag on a remote machine."
+			echo "            Usage: 'toolsinit username@remotehost' "
+		exit
+    fi
+done
+
+if  [ "$1" == "" ]; then	
+	echo "You need to specify the user and remote host names, e.g. fred@remote"
+else
+    ssh $1 "git clone https://github.com/julianpratt/Toolbag ; chmod +x Toolbag/setup ; Toolbag/setup "
+fi
