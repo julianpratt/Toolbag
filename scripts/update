@@ -23,6 +23,8 @@ if [ "$1" == "toolbag" ]; then
 else	
 	sudo apt update
 	sudo apt full-upgrade -y
+	sudo apt autoremove   # remove no longer needed dependencies
+	sudo apt autoclean    # removes packages that can no longer be downloaded
 fi
 
 if   [ ! command -v git &> /dev/null ]; then

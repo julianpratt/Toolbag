@@ -27,13 +27,13 @@ update_profile() {
 	text="$2"
 	if [ ! grep -q "$test" ~/.profile ]; then
 		echo '$text' >> ~/.profile
-  fi	
+	fi	
 }
 
 while getopts h flag; do
     if [ ${flag} == "h" ]; then 
     	usage
-		  exit
+		exit
     fi
 done
 
@@ -44,9 +44,9 @@ if   [ "$command" == "jmri" ]; then
 		exit
 	fi
 else		
-  if   [ "$1" == "vscode" ]; then
+	if   [ "$1" == "vscode" ]; then
 	  command="code"
-  elif [ "$1" == "latex" ]; then	  
+	elif [ "$1" == "latex" ]; then	  
 	  command="pdflatex"
 	elif [ "$1" == "nodejs" ]; then	  
 	  command="node"  
@@ -56,6 +56,7 @@ else
 	  echo "You need to specify which package or command to install. See addtool -h."
     exit
 	fi
+
 	if [ -x "$(command -v $command)" ]; then
 		echo "$1 is already installed"	  
 		exit
@@ -65,18 +66,35 @@ fi
 
 if [ "$1" == "dotnet" ]; then
 	echo "dotnet not installed. Installing..."
-	wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
-	sudo dpkg -i packages-microsoft-prod.deb
-	sudo apt-get update; sudo apt-get install -y apt-transport-https && sudo apt-get update && sudo apt-get install -y dotnet-sdk-5.0
+	dest=/usr/local/bin
+	wget https://dot.net/v1/dotnet-install.sh -O ./dotnet-install
+	chmod +x ./dotnet-install
+	sudo mv dotnet-install $dest
+	dotnet-install
+	
+	#wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+	#sudo dpkg -i packages-microsoft-prod.deb
+	#sudo apt-get update; sudo apt-get install -y apt-transport-https && sudo apt-get update && sudo apt-get install -y dotnet-sdk-5.0
 
 elif [ "$1" == "java" ]; then
 	echo "java not installed. Installing openjdk-11... (n.b. v17 is latest LTS)"
-	sudo apt install -y openjdk-11-jdk
+	if [ "$2" == "jdk" ]; then		
+		sudo apt install -y openjdk-11-jdk
+	else
+		sudo apt install -y openjdk-11-jre
+	fi
 
 elif [ "$1" == "jmri" ]; then
-	echo "JMRI not installed. Installing v5.4..."
-	path="https://github.com/JMRI/JMRI/releases/download/v5.4"
-	file="JMRI.5.4+R9005ecb4ac.tgz"
+	echo "JMRI not installed. Installing v5.6..."
+	
+	# JRE is required 
+	if [ ! -x "$(command -v java)" ]; then
+		echo "Java runtime absent - installing..."	  
+		sudo apt install -y openjdk-11-jre
+	fi
+	
+	path="https://github.com/JMRI/JMRI/releases/download/v5.6"
+	file="JMRI.5.6+R89a87446cb.tgz"	
 
 	wget_tar $path $file "JMRI" "/opt"
 	shortcut decoderpro "/opt/JMRI" DecoderPro
@@ -171,13 +189,13 @@ elif [ "$1" == "cprogs" ]; then
 
 elif [ "$1" == "noip2" ]; then
 	echo "noip2 not installed. Installing..."
-	path="https://www.noip.com/client/linux"
-	file="noip-duc-linux.tar.gz"
+	path="https://www.noip.com/download/linux/latest"
+	file="noip-duc_3.1.0.tar.gz"
 	. temp
-	wget -q $path/$file 
-	tar xf $file
-	rm $file
-	cd noip-2.1.9-1 
+	wget -q $path 
+	tar xf $file.tar.gz
+	rm $file.tar.gz
+	cd $file 
 	make CC="gcc -w" -s
 	echo "Ignore the make install verbiage"
 	echo "Enter email used to login to www.noip.com (with password, '30' and 'N')"

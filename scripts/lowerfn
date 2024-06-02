@@ -1,0 +1,19 @@
+#!/bin/bash
+
+while getopts h flag
+do
+    if [ ${flag} == "h" ]
+    then 
+		echo "lowerfn - rename files to lower case."
+		echo "          Positional parameter is the filename template."
+        echo "          e.g. lowerfn *.JPG" 
+		exit
+    fi
+done
+
+if [ "$1" == "" ]
+then
+    echo "Error: Please specify filename template. Use lowerfn -h for more."    
+else
+	for f in `find $1`; do mv "$f" "`echo $f | tr '[A-Z]' '[a-z]'`"; done
+fi

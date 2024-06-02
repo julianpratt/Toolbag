@@ -17,10 +17,10 @@ while getopts ah flag
 do
     if [ ${flag} == "h" ]; then 
     	usage
-		  exit
+		exit
     elif [ ${flag} == "a" ]; then 
-			autostart="yes"
-			shift
+		autostart="yes"
+		shift
     fi
 done
 
@@ -40,7 +40,7 @@ appname="$2"
 icon="$3"
 
 if [ ! -d ~/Desktop ]; then
-		mkdir ~/Desktop
+	mkdir ~/Desktop
 fi
 
 cat > ~/Desktop/$command.desktop << EOF

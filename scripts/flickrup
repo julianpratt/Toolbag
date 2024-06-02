@@ -1,0 +1,29 @@
+#!/bin/bash
+
+while getopts h flag
+do
+    if [ ${flag} == "h" ]
+    then 
+		echo "flickrup - update photo's metadata for Flickr."
+		echo "           It's positional parameters are:"
+        echo "           filename    - the filesystem name of the photo" 		
+        echo "           title       - its name in Flickr" 
+        echo "           creator     - name of the person who took the photo" 		
+        echo "           shot        - date photo was taken, in YYYY:mm:dd format" 
+        echo "           description - an extended description" 		
+        echo "           e.g. flickrup 009.jpg Title Fred 1959:1:1 description" 
+		exit
+    fi
+done
+
+if [ "$1" == "" ] || [ "$2" == "" ] || [ "$3" == "" ] || [ "$4" == "" ] || [ "$5" == "" ]
+then
+    echo "Error: Please specify positional parameters. Use flickrup -h for the list."    
+else
+
+	exiftool "-title=$2" $1
+	exiftool "-creator=$3" $1
+	exiftool "-createdate=$4 0:0:0" $1
+	exiftool "-description=$5" $1
+
+fi

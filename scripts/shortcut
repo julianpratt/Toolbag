@@ -1,10 +1,10 @@
 #!/bin/bash
 
 usage() {
-cat << EOF  
+cat << EOF
 shortcut - Will create a shortcut in /usr/local/bin to execute a command.
            Usage: 'shortcut name folder command'
-           e.g.   shortcut panelpro PanelPro /opt/JMRI
+           e.g.   shortcut panelpro "/opt/JMRI" PanelPro
            where: name is the name of the script file that will be created
                   folder is the folder the command is to be executed in  
                   command is the command to be executed in folder 
@@ -17,7 +17,7 @@ while getopts h flag
 do
     if [ ${flag} == "h" ]; then 
     	usage
-		  exit
+		exit
     fi
 done
 
@@ -36,8 +36,7 @@ name="$1"
 folder="$2"
 command="$3"
 
-
-cat > $name << EOF		
+cat > $name << EOF
 #!/bin/bash
 
 if [ ! -d $folder ]; then
