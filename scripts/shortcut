@@ -36,6 +36,8 @@ name="$1"
 folder="$2"
 command="$3"
 
+cd ~
+
 cat > $name << EOF
 #!/bin/bash
 

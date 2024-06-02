@@ -15,12 +15,12 @@ done
 cd ~
 
 if [ "$1" == "untemp" ]; then
-    if [ -d temp ]; then
-        rm -r temp
+    if [ -d ~/temp ]; then
+        rm -r ~/temp
     fi     
 else
-    if [ ! -d temp ]; then
-        mkdir temp
+    if [ ! -d ~/temp ]; then
+        mkdir ~/temp
     fi    
-    cd temp    
+    cd ~/temp    
 fi
