@@ -81,7 +81,8 @@ elif [ "$1" == "java" ]; then
 	if [ "$2" == "jdk" ]; then		
 		sudo apt install -y openjdk-11-jdk
 	else
-		sudo apt install -y openjdk-11-jre
+#		sudo apt install -y openjdk-11-jre
+		sudo apt install -y default-jre
 	fi
 
 elif [ "$1" == "jmri" ]; then

@@ -42,6 +42,9 @@ icon="$3"
 if [ ! -d ~/Desktop ]; then
 	mkdir ~/Desktop
 fi
+if [ -f ~/Desktop/$command.desktop ]; then
+	rm ~/Desktop/$command.desktop
+fi
 
 cat > ~/Desktop/$command.desktop << EOF
 [Desktop Entry]
@@ -62,6 +65,9 @@ if [ "$autostart" == "yes" ]; then
 	fi	
 	if [ ! -d ~/.config/autostart ]; then
 		mkdir ~/.config/autostart
+	fi	
+	if [ -L ~/.config/autostart/$command.desktop ]; then
+		rm ~/.config/autostart/$command.desktop
 	fi	
 
 	ln -s ~/Desktop/$command.desktop ~/.config/autostart/$command.desktop
