@@ -10,7 +10,7 @@ do
         echo "       expands to rclone sync folder remote:folder."
         echo "       It is assumed that the folder has the same name on both"
         echo "       remote and local filesystems."     
-		echo "       If remote is omitted, then Drive is assumed."  			
+		echo "       If remote is omitted, then 'drive' is assumed."  			
 		exit
     fi
 done
@@ -21,7 +21,7 @@ if [ "${#1}" == 0 ]; then
 fi  
 
 if [ "${#2}" == 0 ]; then
-	remote="Drive" 
+	remote="drive" 
 	folder="$1" 
 else
 	remote="$1" 
