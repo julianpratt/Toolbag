@@ -43,10 +43,11 @@ cat > $name << EOF
 
 if [ ! -d $folder ]; then
   echo "$folder cannot be found!"
+elif [ ! -f $command ]; then
+  echo "$command cannot be found in $folder!"
 else
-  cd $folder
-  ./$command
-fi  
+  $folder/$command "$@"
+fi
 EOF
 chmod +x $name
 sudo mv $name /usr/local/bin

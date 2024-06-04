@@ -9,22 +9,23 @@ do
         echo "       i.e. drive: and dropbox:. Thus: 'push remote folder',"
         echo "       expands to rclone sync folder remote:folder."
         echo "       It is assumed that the folder has the same name on both"
-        echo "       remote and local filesystems."        
+        echo "       remote and local filesystems."     
+		echo "       If remote is omitted, then Drive is assumed."  			
 		exit
     fi
 done
 
-if [ "${#2}" == 0 ]; then
-    echo "Folder omitted, e.g. pull remote folder"
-    exit
-fi  
-
 if [ "${#1}" == 0 ]; then
-    echo "Remote omitted, e.g. pull remote folder"
+    echo "Remote and folder omitted, e.g. push remote folder or push folder"
     exit
 fi  
 
-remote="$1" 
-folder="$2" 
+if [ "${#2}" == 0 ]; then
+	remote="Drive" 
+	folder="$1" 
+else
+	remote="$1" 
+	folder="$2" 
+fi	
 
 rclone sync $folder $remote:$folder
