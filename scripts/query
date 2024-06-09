@@ -6,15 +6,29 @@ do
     then 
 		echo "query - report on configuration and environment"
         echo "        'query ip' reports: IP address, gateway IP address and DNS IP address" 
+        echo "        'query arch' reports the machine architecture ()" 
 		exit
     fi
 done
 
-if [ "$1" == "ip" ]
-then
+if   [ "$1" == "ip" ]; then
     echo "IP address is $(hostname -I)"
     echo "Gateway IP address is $(ip r | grep default)"
     cat /etc/resolv.conf | grep nameserver
+
+elif [ "$1" == "arch" ]; then
+	if [ $(arch) == "x86_64" ]; then 
+		arch="amd64"
+	else
+		arch="arm64"
+	fi		
+
+	if [ "$2" != "" ] && [ "$arch" == "arm64" ]; then
+		arch="$2"
+	fi
+
+	echo "$arch"	
+
 else
     echo "query '$1' is not valid."    
 fi
