@@ -29,13 +29,13 @@
 
 	# Install scripts   	
 	cd scripts
-	chmod +x *	# scripts, etc come down from github without the execute permission set 
+	chmod 777 *	# scripts, etc come down from github without the execute permission set 
 	sudo chown root:root * 
 	sudo mv * $dest
 
 	# Install hub
 	wget https://github.com/julianpratt/Toolbag/releases/download/$version/hub_$(query arch) -O hub
-	chmod +x *	# scripts, etc come down from github without the execute permission set 
+	chmod 777 *	# scripts, etc come down from github without the execute permission set 
 	sudo chown root:root * 
 	sudo mv * $dest
 
