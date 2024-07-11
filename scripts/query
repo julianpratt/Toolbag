@@ -17,18 +17,18 @@ if   [ "$1" == "ip" ]; then
     cat /etc/resolv.conf | grep nameserver
 
 elif [ "$1" == "arch" ]; then
-	arch = $(uname -m)
-	if   [ $arch == "x86_64" ]; then 
-		arch = "amd64"
-	elif [ $arch == "aarch64" ]; then 
-		arch = "arm64"
-	elif [ $arch == "armv7l" ]; then 
-		arch = "armv6l"
+	a = $(uname -m)
+	if   [ $a == "x86_64" ]; then 
+		a = "amd64"
+	elif [ $a == "aarch64" ]; then 
+		a = "arm64"
+	elif [ $a == "armv7l" ]; then 
+		a = "armv6l"
 	else
-		arch = "unknown"
+		a = "unknown"
 	fi		
 
-	echo "$arch"	
+	echo "$a"	
 
 else
     echo "query '$1' is not valid."    
