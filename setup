@@ -11,21 +11,36 @@
 		exit
 	fi
 
-    if [ ! -d ~/temp ]; then
-        mkdir ~/temp
-    fi    
+	# Make temp
+    if [ -d ~/temp ]; then
+		echo "~/temp already exists. Delete it before running this"
+		exit	
+    fi  
+	mkdir ~/temp	
     cd ~/temp 
+	
+	# Get scripts
 	wget https://github.com/julianpratt/Toolbag/archive/refs/tags/$version.tar.gz -O toolbag.tar.gz
 	tar xvzf toolbag.tar.gz --strip-components=1
 	if [ ! -d scripts ]; then 	
 		echo "scripts folder missing from Toolbag, I cannot proceed"	
 		exit
 	fi	
+
 	# Install scripts   	
 	cd scripts
-	chmod +x *	# scripts come down from github without the execute permission set 
-	chown root:root * 
+	chmod +x *	# scripts, etc come down from github without the execute permission set 
+	sudo chown root:root * 
 	sudo mv * $dest
-	sudo wget https://github.com/julianpratt/Toolbag/releases/download/$version/hub_$(query arch) -O $dest/hub
+
+	# Install hub
+	wget https://github.com/julianpratt/Toolbag/releases/download/$version/hub_$(query arch) -O hub
+	chmod +x *	# scripts, etc come down from github without the execute permission set 
+	sudo chown root:root * 
+	sudo mv * $dest
+
+	# Clean up
 	cd ~
 	sudo rm -rf temp
+	rm setup
+	
