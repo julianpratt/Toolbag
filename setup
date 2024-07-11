@@ -24,7 +24,8 @@
 	# Install scripts   	
 	cd scripts
 	chmod +x *	# scripts come down from github without the execute permission set 
+	chown root:root * 
 	sudo mv * $dest
-	wget https://github.com/julianpratt/Toolbag/releases/download/$version/hub_$(query arch) -O $dest/hub
+	sudo wget https://github.com/julianpratt/Toolbag/releases/download/$version/hub_$(query arch) -O $dest/hub
 	cd ~
-	rm -rf temp
+	sudo rm -rf temp
