@@ -10,6 +10,11 @@ do
     fi
 done
 
+if [ -f /etc/VERSION ]; then
+	echo "Do not use this on a Synology"	  
+	exit
+fi
+
 if [ "$1" == "" ] || [ "$2" == "" ]
 then
     echo "Error: Please specify drive and/or folder to copy wallpaper images to."    

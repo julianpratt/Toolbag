@@ -3,8 +3,8 @@
 usage() {
 cat << EOF  
 makesys - Will setup a systemd service to run a command.
-          Usage: 'makesys name folder command'
-          e.g.   makesys testservice /usr/local/bin testservice
+          Usage: 'makesys name description workingdir command user'
+          e.g.   makesys testservice "Test Service" /usr/local/bin testservice julian
 EOF
 }
 
@@ -20,31 +20,85 @@ if [ "$1" == "" ]; then
 	echo "You need to specify the name of the systemd service. See makesys -h."
 	exit
 elif [ "$2" == "" ]; then	
-	echo "You need to specify the name of the application. See makesys -h."
+	echo "You need to specify the description of the service. See makesys -h."
 	exit
 elif [ "$3" == "" ]; then	
-	echo "You need to specify which command the shortcut will execute. See makesys -h."
+	echo "You need to specify the working directory. See makesys -h."
 	exit
+elif [ "$4" == "" ]; then	
+	echo "You need to specify which command will execute. See makesys -h."
+	exit
+elif [ "$5" == "" ]; then	
+	echo "You need to specify which user will execute the command. See makesys -h."
+	exit	
 fi
 
 name="$1"
-folder="$2"
-command="$3"
+desc="$2"
+workdir="$3"
+command="$4"
+user="$5"
+config="$6"
+
+#
+# Boolean arguments. Positive: 1, yes, true and on are equivalent. Negative: 0, no, false and off are equivalent.
+# See https://www.freedesktop.org/software/systemd/man/systemd.exec.html
+# See https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html
+# See https://www.freedesktop.org/software/systemd/man/latest/systemd.syntax.html
+# https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/using_systemd_unit_files_to_customize_and_optimize_your_system/index
+#
 
 sudo cat >$name.service << EOF
 [Unit]
-Description=service $name
-
-[Service]
-Type=simple
-Restart=always
-RestartSec=5s
-WorkingDirectory=$folder
-ExecStart=$command
+Description=$desc
+After=remote-fs.target network.target
+AssertPathExists=$workdir
 
 [Install]
 WantedBy=multi-user.target
+
+[Service]
+Type=simple
+WorkingDirectory=$folder
 EOF
+
+if [ "$config" == "" ]; then	
+sudo cat >>$name.service << EOF
+ExecStart=$command
+EOF
+else
+sudo cat >>$name.service << EOF
+ExecStart=$command --configfile "$config"
+EOF
+fi 
+
+if [ "$name" == "navidrome" ]; then
+sudo cat >>$name.service << EOF
+User=$user
+Group=Users
+TimeoutStopSec=20
+KillMode=process
+Restart=on-failure
+
+DevicePolicy=closed
+NoNewPrivileges=yes
+PrivateTmp=yes
+PrivateUsers=yes
+ProtectControlGroups=yes
+ProtectKernelModules=yes
+ProtectKernelTunables=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+RestrictNamespaces=yes
+RestrictRealtime=yes
+SystemCallFilter=~@clock @debug @module @mount @obsolete @reboot @setuid @swap
+ReadWritePaths=$workdir
+EOF
+else
+sudo cat >>$name.service << EOF
+Restart=always
+RestartSec=5s
+EOF
+fi
 
 sudo mv $name.service /lib/systemd/system
 sudo chmod 644 /lib/systemd/system/$name.service

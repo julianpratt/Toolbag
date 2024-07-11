@@ -30,5 +30,6 @@ treesize  - calculates space used by folders in current directory
 update    - updates apt packages and toolbag itself 
 userdata  - sets or gets the user's name and/or email (stored in the GECOS field of /etc/passwd)
 versions  - reports the installed version of: git, dotnet, java, code, node, npm
-					
+	
+n.b. addtool, desktop, pull, push, setupgit and userdata should not be used on a Synology NAS.	
 EOF

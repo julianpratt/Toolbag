@@ -40,7 +40,7 @@ done
 
 command="$1"
 if   [ "$command" == "jmri" ]; then
-	if [ -d $/opt/JMRI ]; then
+	if [ -d /opt/JMRI ]; then
 		echo "JMRI is already installed"	
 		exit
 	fi
@@ -63,6 +63,11 @@ else
 		exit
 	fi
 fi	
+
+if [ -f /etc/VERSION ]; then
+	echo "Do not use this on a Synology"	  
+	exit
+fi
 
 
 if [ "$1" == "dotnet" ]; then

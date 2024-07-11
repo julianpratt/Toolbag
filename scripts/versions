@@ -12,6 +12,10 @@ do
     fi
 done
 
+if [ -f /etc/VERSION ]; then
+	echo "This should not produce anything interesting on a Synology"	  
+fi
+
 if ! command -v git &> /dev/null
 then
     echo "git is not installed"

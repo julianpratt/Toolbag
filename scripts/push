@@ -20,6 +20,11 @@ if [ "${#1}" == 0 ]; then
     exit
 fi  
 
+if [ -f /etc/VERSION ]; then
+	echo "Do not use this on a Synology"	  
+	exit
+fi
+
 if [ "${#2}" == 0 ]; then
 	remote="drive" 
 	folder="$1" 

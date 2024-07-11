@@ -35,6 +35,12 @@ elif [ "$3" == "" ]; then
 	exit
 fi
 
+if [ -f /etc/VERSION ]; then
+	echo "Do not use this on a Synology"	  
+	exit
+fi
+
+
 command="$1"
 appname="$2"
 icon="$3"
