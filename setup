@@ -2,20 +2,29 @@
 
 # Components of Toolbag are installed in /usr/local/bin
 # because this is generally on the path and rarely used.  
-dest=/usr/local/bin
 
-if [ ! -d Toolbag ]; then 
-	echo "setup must be run from the parent of Toolbag"
-elif [ ! -d Toolbag/scripts ]; then 	
-	echo "scripts folder missing from Toolbag, I cannot proceed"	
-elif [ ! -d "$dest" ]; then 	
-	echo "'$dest' folder missing, I cannot proceed"		
-else
-	cd Toolbag
+	dest=/usr/local/bin
+	version=v0.1-alpha
+
+	if [ ! -d "$dest" ]; then 	
+		echo "'$dest' folder missing, I cannot proceed"		
+		exit
+	fi
+
+    if [ ! -d ~/temp ]; then
+        mkdir ~/temp
+    fi    
+    cd ~/temp 
+	wget https://github.com/julianpratt/Toolbag/archive/refs/tags/$version.tar.gz -O toolbag.tar.gz
+	tar xvzf toolbag.tar.gz --strip-components=1
+	if [ ! -d scripts ]; then 	
+		echo "scripts folder missing from Toolbag, I cannot proceed"	
+		exit
+	fi	
 	# Install scripts   	
 	cd scripts
 	chmod +x *	# scripts come down from github without the execute permission set 
 	sudo mv * $dest
-	cd ../..
-	rm -rf Toolbag
-fi
+	wget https://github.com/julianpratt/Toolbag/releases/download/$version/hub_$(query arch) -O $dest/hub
+	cd ~
+	rm -rf temp

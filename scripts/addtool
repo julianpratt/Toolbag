@@ -151,9 +151,9 @@ elif [ "$1" == "pandoc" ]; then
 	wget_tar $path $file pandoc /usr/local/bin
 
 elif [ "$1" == "golang" ]; then	
-	golangversion="1.22.3"
+	golangversion="1.22.5"
 	path="https://go.dev/dl"
-	file="go$golangversion.linux-$(query arch armv61).tar.gz"
+	file="go$golangversion.linux-$(query arch).tar.gz"
 	
 	wget_tar $path $file "go" "/usr/local"
 	update_profile "/usr/local/go/bin" 'export PATH=$PATH:/usr/local/go/bin'

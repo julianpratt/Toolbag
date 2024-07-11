@@ -4,3 +4,4 @@ for arch in ${archs[@]}
 do
 	env GOOS=linux GOARCH=${arch} go build -o hub_${arch} hub.go page.go site.go
 done
+mv hub_arm hub_armv61 

@@ -4,23 +4,14 @@ Tools to aid brain fade and reduce documentation
 
 ## Installation
 
-Toolbag components are installed in /usr/local/bin, because this folder is in the path 
-and is generally empty. 
+Toolbag components are installed in /usr/local/bin, because this folder is in the path.
 
-It is installed from github, so the git command is required (if it isn't already available):
+The steps are: download setup script, make it executable, run it and delete it. For VERSION substitute the latest version (e.g. v1.0).
 
-    sudo apt install -y git
-
-First clone the github repository and make the setup script executable, and then run it. 
-Setup will clean up after itself, by deleting the repository you've just cloned.
-
-    git clone https://github.com/julianpratt/Toolbag
-    chmod +x Toolbag/setup
-    Toolbag/setup
-
-These instructions can be repeated to update an existing installation of Toolbag. 
-
-Alternatively use the update command to achieve the same thing.
+    wget https://github.com/julianpratt/Toolbag/releases/download/VERSION/setup
+    chmod +x setup
+    ./setup
+    rm setup
 
 
 ## Usage

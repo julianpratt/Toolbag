@@ -6,7 +6,7 @@ do
     then 
 		echo "query - report on configuration and environment"
         echo "        'query ip' reports: IP address, gateway IP address and DNS IP address" 
-        echo "        'query arch' reports the machine architecture ()" 
+        echo "        'query arch' reports the machine architecture (as used by golang: amd64, arm64 or armv6l)" 
 		exit
     fi
 done
@@ -17,15 +17,16 @@ if   [ "$1" == "ip" ]; then
     cat /etc/resolv.conf | grep nameserver
 
 elif [ "$1" == "arch" ]; then
-	if [ $(arch) == "x86_64" ]; then 
-		arch="amd64"
+	arch = $(uname -m)
+	if   [ $arch == "x86_64" ]; then 
+		arch = "amd64"
+	elif [ $arch == "aarch64" ]; then 
+		arch = "arm64"
+	elif [ $arch == "armv7l" ]; then 
+		arch = "armv6l"
 	else
-		arch="arm64"
+		arch = "unknown"
 	fi		
-
-	if [ "$2" != "" ] && [ "$arch" == "arm64" ]; then
-		arch="$2"
-	fi
 
 	echo "$arch"	
 
