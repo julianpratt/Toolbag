@@ -17,16 +17,16 @@ if   [ "$1" == "ip" ]; then
     cat /etc/resolv.conf | grep nameserver
 
 elif [ "$1" == "arch" ]; then
-	a = $(uname -m)
+	a=$(uname -m)
 	if   [ $a == "x86_64" ]; then 
-		a = "amd64"
+		a="amd64"
 	elif [ $a == "aarch64" ]; then 
-		a = "arm64"
+		a="arm64"
 	elif [ $a == "armv7l" ]; then 
-		a = "armv6l"
+		a="armv6l"
 	else
-		a = "unknown"
-	fi		
+		a="unknown"
+	fi
 
 	echo "$a"	
 
