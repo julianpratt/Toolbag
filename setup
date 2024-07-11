@@ -4,7 +4,7 @@
 # because this is generally on the path and rarely used.  
 
 	dest=/usr/local/bin
-	version=v0.1-alpha
+	version=v1.0
 
 	if [ ! -d "$dest" ]; then 	
 		echo "'$dest' folder missing, I cannot proceed"		
@@ -12,12 +12,12 @@
 	fi
 
 	# Make temp
-    if [ -d ~/temp ]; then
+	if [ -d ~/temp ]; then
 		echo "~/temp already exists. Delete it before running this"
 		exit	
-    fi  
+	fi  
 	mkdir ~/temp	
-    cd ~/temp 
+	cd ~/temp 
 	
 	# Get scripts
 	wget https://github.com/julianpratt/Toolbag/archive/refs/tags/$version.tar.gz -O toolbag.tar.gz
