@@ -1,0 +1,12 @@
+[Unit]
+Description=Test Service (checks systemd service definitions)
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5s
+WorkingDirectory=/usr/local/bin
+ExecStart=/usr/local/bin/testservice
+
+[Install]
+WantedBy=multi-user.target

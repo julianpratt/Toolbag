@@ -1,0 +1,12 @@
+[Unit]
+Description=Private Notes
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5s
+WorkingDirectory=/www/Notes
+ExecStart=/usr/local/bin/hub
+
+[Install]
+WantedBy=multi-user.target

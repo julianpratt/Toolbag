@@ -3,11 +3,21 @@
 # Components of Toolbag are installed in /usr/local/bin
 # because this is generally on the path and rarely used.  
 
-	dest=/usr/local/bin
+	destbin=/usr/local/bin
+	destserv=/lib/systemd/system
 	version=v1.0
 
-	if [ ! -d "$dest" ]; then 	
-		echo "'$dest' folder missing, I cannot proceed"		
+	if [ ! -d "$destbin" ]; then 	
+		echo "'$destbin' folder missing, I cannot proceed"		
+		exit
+	elif [ ! -d "$destserv" ]; then 	
+		echo "'$destserv' folder missing, I cannot proceed"		
+		exit
+	elif [ ! -x "$(command -v wget)" ]; then
+		echo "wget command missing, I cannot proceed"		
+		exit
+	elif [ ! -x "$(command -v tar)" ]; then	
+		echo "tar command missing, I cannot proceed"		
 		exit
 	fi
 
@@ -19,25 +29,50 @@
 	mkdir ~/temp	
 	cd ~/temp 
 	
-	# Get scripts
+	# Get scripts and services
 	wget https://github.com/julianpratt/Toolbag/archive/refs/tags/$version.tar.gz -O toolbag.tar.gz
 	tar xvzf toolbag.tar.gz --strip-components=1
-	if [ ! -d scripts ]; then 	
+
+	# Install scripts   	
+	if [ ! -d ~/temp/scripts ]; then 	
 		echo "scripts folder missing from Toolbag, I cannot proceed"	
 		exit
 	fi	
-
-	# Install scripts   	
-	cd scripts
+	cd ~/temp/scripts
 	chmod 777 *	# scripts, etc come down from github without the execute permission set 
 	sudo chown root:root * 
-	sudo mv * $dest
+	sudo mv * $destbin
 
 	# Install hub
+	if [ "$(query arch)" == "unknown" ]; then 	
+		echo "Unknown machine architecture. I cannot install hub"	
+		exit
+	fi	
 	wget https://github.com/julianpratt/Toolbag/releases/download/$version/hub_$(query arch) -O hub
-	chmod 777 *	# scripts, etc come down from github without the execute permission set 
+	chmod 777 *	# executables come down from github without the execute permission set 
 	sudo chown root:root * 
-	sudo mv * $dest
+	sudo mv * $destbin
+
+	# Install services   	
+	if [ ! -d ~/temp/services ]; then 	
+		echo "services folder missing from Toolbag, I cannot install services"	
+		exit
+	elif [ ! -x "$(command -v systemctl)" ]; then	
+		echo "systemctl command missing, I cannot install services"		
+		exit
+	fi
+	cd ~/temp/services
+	chmod 644 *	# permissions should be: -rw-r--r-- 
+	sudo chown root:root * 
+	for f in *; do
+		if [ systemctl is-active --quiet $f ]; then
+			sudo systemctl stop $f
+			sudo mv $f $destserv
+			sudo systemctl start $f
+		else	
+			sudo mv $f $destserv
+		fi	
+    done
 
 	# Clean up
 	cd ~

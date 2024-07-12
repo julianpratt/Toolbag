@@ -4,11 +4,16 @@ usage() {
 cat << EOF  
 update - First gets an updated list of apt package versions and then
          does a full upgrade of each package to its latest version.
-         It then updates all the Toolbag scripts. If used with the
-         toolbag parameter (e.g. 'update toolbag'), then it just updates 
-         the Toolbag scripts and binaries. It invokes sudo itself.
+
+         It then updates all the Toolbag scripts. 
+		 If used with the toolbag parameter (e.g. 'update toolbag'), 
+		 then it just updates the Toolbag scripts and binaries. 
+		 
+		 It invokes sudo itself (as needed).
 EOF
 }
+
+version=1.0 
 
 while getopts h flag
 do
@@ -20,21 +25,20 @@ done
 
 if [ "$1" == "toolbag" ]; then
 	echo "Just updating toolbag scripts"
-else	
+elif [ -x "$(command -v apt)" ]; then
 	sudo apt update
 	sudo apt full-upgrade -y
 	sudo apt autoremove   # remove no longer needed dependencies
 	sudo apt autoclean    # removes packages that can no longer be downloaded
 fi
 
-if   [ ! command -v git &> /dev/null ]; then
-	echo "Cannot update Toolbag components, git is not available" 
-elif [ ! command -v temp &> /dev/null ]; then
-	echo "Cannot update Toolbag components, temp is not available" 
+if   [ ! -x "$(command -v wget)" ]; then
+	echo "Cannot update Toolbag components, wget is not available" 
 else
-    . temp
-    git clone https://github.com/julianpratt/Toolbag
-    chmod +x Toolbag/setup
-    Toolbag/setup
-    temp untemp
+	
+	# Get setup script, make it executable and execute it (setup deletes itself)
+	cd ~
+    wget https://github.com/julianpratt/Toolbag/releases/download/$version/setup
+    chmod +x setup
+    ~/setup
 fi    

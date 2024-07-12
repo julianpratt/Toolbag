@@ -31,6 +31,37 @@ update_profile() {
 	fi	
 }
 
+checkcommand() {
+	cmd="$1"
+	if [ ! -x "$(command -v $cmd)" ]; then
+		echo "$cmd command missing, I cannot proceed"		
+		exit
+	fi	
+} 
+
+aptinstall() {
+	pkg="$1"
+	checkcommand apt
+	if [ ! -x "$(command -v $pkg)" ]; then
+		sudo apt update && sudo apt install $pkg -y
+	else	
+		sudo apt update && sudo apt upgrade $pkg -y
+	fi	
+}
+
+save() {
+	file="$1"
+	sudo tee $file > /dev/null
+}
+
+myget() {
+	source="$1"
+	file="$2"
+	mode="$3"
+	wget -qO- $source | save $file && sudo chmod $mode $file
+}
+
+
 while getopts h flag; do
     if [ ${flag} == "h" ]; then 
     	usage
@@ -38,7 +69,14 @@ while getopts h flag; do
     fi
 done
 
+if [ -f /etc/VERSION ]; then
+	echo "Do not use this on a Synology"	  
+	exit
+fi
+
 command="$1"
+packagelist=""
+
 if   [ "$command" == "jmri" ]; then
 	if [ -d /opt/JMRI ]; then
 		echo "JMRI is already installed"	
@@ -46,16 +84,17 @@ if   [ "$command" == "jmri" ]; then
 	fi
 else		
 	if   [ "$1" == "vscode" ]; then
-	  command="code"
-	elif [ "$1" == "latex" ]; then	  
-	  command="pdflatex"
-	elif [ "$1" == "nodejs" ]; then	  
-	  command="node"  
-	elif [ "$1" == "golang" ]; then	  
-	  command="go"  
+		packagelist="code"
+	elif [ "$1" == "latex" ]; then
+		fonts="texlive-fonts-recommended texlive-fonts-extra"
+		packagelist="texlive texlive-base texlive-latex-recommended texlive-latex-extra $fonts"
+	elif [ "$1" == "nodejs" ]; then
+		command="node"
+	elif [ "$1" == "golang" ]; then
+		command="go"
 	elif [ "$1" == "" ]; then	
-	  echo "You need to specify which package or command to install. See addtool -h."
-    exit
+		echo "You need to specify which package or command to install. See addtool -h."
+		exit
 	fi
 
 	if [ -x "$(command -v $command)" ]; then
@@ -64,13 +103,10 @@ else
 	fi
 fi	
 
-if [ -f /etc/VERSION ]; then
-	echo "Do not use this on a Synology"	  
-	exit
-fi
+if [ "$packagelist" != "" ]; then
+	aptinstall $packagelist
 
-
-if [ "$1" == "dotnet" ]; then
+elif [ "$1" == "dotnet" ]; then
 	echo "dotnet not installed. Installing..."
 	dest=/usr/local/bin
 	cd ~
@@ -82,10 +118,6 @@ if [ "$1" == "dotnet" ]; then
 	chmod +x ~/dotnet-install
 	sudo mv ~/dotnet-install $dest
 	dotnet-install
-	
-	#wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
-	#sudo dpkg -i packages-microsoft-prod.deb
-	#sudo apt-get update; sudo apt-get install -y apt-transport-https && sudo apt-get update && sudo apt-get install -y dotnet-sdk-5.0
 
 elif [ "$1" == "java" ]; then
 	echo "java not installed. Installing openjdk-11... (n.b. v17 is latest LTS)"
@@ -118,18 +150,6 @@ elif [ "$1" == "jmri" ]; then
 	echo "set 'Do not ask options on launch executable file' to true"
 	echo "in File Manager, Edit, Preferences, General."
 
-elif [ "$1" == "vscode" ]; then
-	if [ ! command -v code &> /dev/null ]; then
-		sudo apt update
-		sudo apt install -y code
-  elif [ "$2" == "upgrade" ]; then		
-		echo "vscode installed. Upgrading..."
-		sudo apt update
-		sudo apt upgrade -y code
-	else
-		echo "vscode is already installed (it can be upgraded with 'addtool vscode upgrade')"	
-	fi	
-
 elif [ "$1" == "nodejs" ]; then	
 	echo "Installing node v15.4. v17 is the latest but CbusServer won't 'npm install' with it."
 	curl -sL https://deb.nodesource.com/setup_15.x | sudo -E bash -
@@ -139,14 +159,14 @@ elif [ "$1" == "nodejs" ]; then
 elif [ "$1" == "npm" ]; then	
 	echo "To install npm use 'addtool nodejs'"
 
-elif [ "$1" == "latex" ]; then	
-	sudo apt install texlive texlive-base texlive-latex-recommended texlive-latex-extra
-	sudo apt install texlive-fonts-recommended texlive-fonts-extra
-
 elif [ "$1" == "pandoc" ]; then	
+	if [ "$(query arch)" == "armv6l" ]; then
+		echo "Cannot use pandoc on armv6l"
+		exit
+	fi	
 	pandocversion="2.17.1.1"
 	path="https://github.com/jgm/pandoc/releases/download/$pandocversion"
-	file="pandoc-$pandocversion-linux-$(whatarch).tar.gz"
+	file="pandoc-$pandocversion-linux-$(query arch).tar.gz"
 
 	wget_tar $path $file pandoc /usr/local/bin
 
@@ -173,6 +193,9 @@ elif [ "$1" == "cprogs" ]; then
 	sudo apt update
 	sudo apt full-upgrade -y
 	sudo apt install -y git make gcc
+	checkcommand gcc
+	checkcommand make
+	checkcommand git
 
   git clone https://github.com/julianpratt/Toolbag
 
@@ -182,10 +205,6 @@ elif [ "$1" == "cprogs" ]; then
 	  echo "src folder missing from Toolbag, I cannot proceed"	
   elif [ ! -d "$dest" ]; then 	
 	  echo "'$dest' folder missing, I cannot proceed"		
-	elif [ ! command -v make &> /dev/null ]; then
-		echo "Cannot install C executables, make command is not available" 
-	elif [ ! command -v gcc  &> /dev/null ]; then
-		echo "Cannot install C executables, gcc command is not available" 
   else
 	  cd Toolbag
 		if [ ! -d bin ]; then 
@@ -219,6 +238,16 @@ elif [ "$1" == "noip2" ]; then
 	cd /etc/rc5.d
 	sudo ln -s ../init.d/noip2.sh S01noip2
 	temp untemp
+
+elif [ "$1" == "gh" ]; then
+	checkcommand wget
+	keyrings=/etc/apt/keyrings
+	ghkeyring=githubcli-archive-keyring.gpg
+	source=https://cli.github.com/packages
+	config="deb [arch=$(dpkg --print-architecture) signed-by=$keyrings/$ghkeyring] $source stable main"
+	
+	sudo mkdir -p -m 755 $keyrings && myget $source/$ghkeyring $keyrings/$ghkeyring go+r && \
+	echo $config | save /etc/apt/sources.list.d/github-cli.list && aptinstall gh
 
 else
 	echo "Package or command '$1' is not recognised. Use: dotnet, java, vscode or nodejs."	
