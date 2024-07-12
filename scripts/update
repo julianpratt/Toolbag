@@ -13,8 +13,6 @@ update - First gets an updated list of apt package versions and then
 EOF
 }
 
-version=1.0 
-
 while getopts h flag
 do
     if [ ${flag} == "h" ]; then 
@@ -33,12 +31,21 @@ elif [ -x "$(command -v apt)" ]; then
 fi
 
 if   [ ! -x "$(command -v wget)" ]; then
-	echo "Cannot update Toolbag components, wget is not available" 
+	echo "Cannot update Toolbag components, wget is not available" 	
+elif [ ! -x "$(command -v tar)" ]; then
+	echo "Cannot update Toolbag components, tar is not available" 	
 else
 	
-	# Get setup script, make it executable and execute it (setup deletes itself)
+	# Get latest setup script, make it executable and execute it (setup deletes itself)
 	cd ~
-    wget https://github.com/julianpratt/Toolbag/releases/download/$version/setup
+
+	# Make temp
+	. temp
+	wget https://github.com/julianpratt/Toolbag/archive/refs/heads/main.tar.gz -O toolbag.tar.gz
+	tar xvzf toolbag.tar.gz --strip-components=1
+	cp setup ..
+	cd ~
+	. temp untemp
     chmod +x setup
     ~/setup
 fi    

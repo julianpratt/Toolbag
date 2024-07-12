@@ -163,12 +163,21 @@ elif [ "$1" == "pandoc" ]; then
 	if [ "$(query arch)" == "armv6l" ]; then
 		echo "Cannot use pandoc on armv6l"
 		exit
-	fi	
-	pandocversion="2.17.1.1"
-	path="https://github.com/jgm/pandoc/releases/download/$pandocversion"
-	file="pandoc-$pandocversion-linux-$(query arch).tar.gz"
+	fi
+	
+	if [ -x "$(command -v gh)" ]; then
+		stem=linux-$(query arch).tar.gz
+		gh release download --pattern=*$stem --repo jgm/pandoc
+		file=$(ls *$stem)
+		
+		
+	else	
+		pandocversion="2.17.1.1"
+		path="https://github.com/jgm/pandoc/releases/download/$pandocversion"
+		file="pandoc-$pandocversion-linux-$(query arch).tar.gz"
 
-	wget_tar $path $file pandoc /usr/local/bin
+		wget_tar $path $file pandoc /usr/local/bin
+	fi
 
 elif [ "$1" == "golang" ]; then	
 	golangversion="1.22.5"

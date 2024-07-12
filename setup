@@ -5,7 +5,6 @@
 
 	destbin=/usr/local/bin
 	destserv=/lib/systemd/system
-	version=v1.0
 
 	if [ ! -d "$destbin" ]; then 	
 		echo "'$destbin' folder missing, I cannot proceed"		
@@ -29,8 +28,8 @@
 	mkdir ~/temp	
 	cd ~/temp 
 	
-	# Get scripts and services
-	wget https://github.com/julianpratt/Toolbag/archive/refs/tags/$version.tar.gz -O toolbag.tar.gz
+	# Get scripts and services from main branch (n.b. not from latest release)  
+	wget https://github.com/julianpratt/Toolbag/archive/refs/heads/main.tar.gz -O toolbag.tar.gz
 	tar xvzf toolbag.tar.gz --strip-components=1
 
 	# Install scripts   	
@@ -42,12 +41,13 @@
 	chmod 777 *	# scripts, etc come down from github without the execute permission set 
 	sudo chown root:root * 
 	sudo mv * $destbin
-
+	
 	# Install hub
 	if [ "$(query arch)" == "unknown" ]; then 	
 		echo "Unknown machine architecture. I cannot install hub"	
 		exit
 	fi	
+	version=$(versions toolbag) # get latest version number
 	wget https://github.com/julianpratt/Toolbag/releases/download/$version/hub_$(query arch) -O hub
 	chmod 777 *	# executables come down from github without the execute permission set 
 	sudo chown root:root * 
@@ -65,7 +65,7 @@
 	chmod 644 *	# permissions should be: -rw-r--r-- 
 	sudo chown root:root * 
 	for f in *; do
-		if [ systemctl is-active --quiet $f ]; then
+		if [ "$(systemctl is-active --quiet $f)" ]; then
 			sudo systemctl stop $f
 			sudo mv $f $destserv
 			sudo systemctl start $f

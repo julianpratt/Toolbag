@@ -15,8 +15,9 @@ done
 cd ~
 
 if [ "$1" == "untemp" ]; then
+	cd ~
     if [ -d ~/temp ]; then
-        rm -r ~/temp
+        rm -rf ~/temp
     fi     
 else
     if [ ! -d ~/temp ]; then

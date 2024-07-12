@@ -12,6 +12,11 @@ do
     fi
 done
 
+if [ "$1" == "toolbag" ]; then
+	echo "v1.2"
+	exit
+fi 
+
 if [ -f /etc/VERSION ]; then
 	echo "This should not produce anything interesting on a Synology"	  
 fi
