@@ -36,7 +36,7 @@ checkcommand() {
 	if [ ! -x "$(command -v $cmd)" ]; then
 		echo "$cmd command missing, I cannot proceed"		
 		exit
-	fi	
+	fi
 } 
 
 aptinstall() {

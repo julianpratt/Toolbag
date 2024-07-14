@@ -1,0 +1,33 @@
+#!/bin/bash
+if [ "${PWD##*/}" != "Toolbag" ]; then
+	echo "You must run release within the Toolbag folder"
+	exit
+elif [ "$1" == "" ]; then
+	echo "You must specify the version number you are creating with this release"
+	exit
+fi
+version=$1
+echo $1 >version 
+
+sudo cat >scripts/toolbag << EOF
+#!/bin/bash 
+echo "$version"
+EOF
+
+git add version
+git add scripts/toolbag
+git commit -m "$version"
+git push
+
+gh release create $version --latest --title "Toolbag $version" 
+
+cd hub
+archs=(amd64 arm arm64)
+for arch in ${archs[@]}
+do
+	env GOOS=linux GOARCH=${arch} go build -o hub_${arch} hub.go page.go site.go
+done
+mv hub_arm hub_armv6l 
+cd ..
+gh release upload $version setup hub/hub_*
+rm hub/hub_* 
