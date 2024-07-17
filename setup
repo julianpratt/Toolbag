@@ -68,6 +68,7 @@
 		if [ "$(systemctl is-active --quiet $f)" ]; then
 			sudo systemctl stop $f
 			sudo mv $f $destserv
+			sudo systemctl daemon-reload
 			sudo systemctl start $f
 		else	
 			sudo mv $f $destserv
