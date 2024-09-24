@@ -4,14 +4,13 @@ Tools to aid brain fade and reduce documentation
 
 ## Installation
 
-Toolbag components are installed in /usr/local/bin, because this folder is in the path.
+Toolbag components are installed in /usr/local/bin, because this folder is in the path (and is often empty).
 
 The steps are: download setup script, make it executable, run it and delete it. For VERSION substitute the latest version (e.g. v1.0).
 
     wget https://github.com/julianpratt/Toolbag/releases/download/VERSION/setup
     chmod +x setup
     ./setup
-    rm setup
 
 
 ## Usage

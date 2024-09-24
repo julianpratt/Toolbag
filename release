@@ -29,5 +29,11 @@ do
 done
 mv hub_arm hub_armv6l 
 cd ..
-gh release upload $version setup hub/hub_*
+
+cd scripts
+tar czf ../scripts.tar.gz .
+cd .. 
+
+gh release upload $version setup hub/hub_* scripts.tar.gz
 rm hub/hub_* 
+rm scripts.tar.gz

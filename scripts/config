@@ -2,9 +2,11 @@
 
 usage() {
 cat << EOF  
-addtool - Will install one of the following: dotnet, java, jmri, vscode, nodejs,
+setup - Used to configure Linux.  
+
+Will install one of the following: dotnet, java, jmri, vscode, nodejs,
           latex, pandoc, golang, mono, cprogs or noip2. 
-          Usage: 'addtool toolname' (e.g. addtool dotnet).
+          Usage: 'setup appname' (e.g. setup dotnet).
 EOF
 }
 
@@ -19,6 +21,18 @@ wget_tar() {
 	rm $file
 
 	sudo mv $folder $dest
+	temp untemp
+	cd ~
+}
+
+wget_deb() {
+	path="$1"
+	pkg="$2" 
+
+	. temp
+	wget -q $path
+	sudo dpkg -i $pkg
+	rm $pkg
 	temp untemp
 	cd ~
 }
@@ -74,39 +88,77 @@ if [ -f /etc/VERSION ]; then
 	exit
 fi
 
-command="$1"
-packagelist=""
+	app="$1"
 
-if   [ "$command" == "jmri" ]; then
-	if [ -d /opt/JMRI ]; then
-		echo "JMRI is already installed"	
+	if   [ "$app" == "full" ]; then
+		setup base
+		setup dev
+		setup calibre
+		setup naps2
+		setup steam
+		setup okular
+		setup rpi-imager
 		exit
-	fi
-else		
-	if   [ "$1" == "vscode" ]; then
-		packagelist="code"
-	elif [ "$1" == "latex" ]; then
+		
+	elif [ "$app" == "base" ]; then	
+		setup geany
+		setup uklocale
+		setup insync
+		exit
+
+	fi		
+
+	packagelist=""
+	snap=""
+	
+	if   [ "$app" == "geany" ]; then
+		packagelist="geany"
+	elif [ "$app" == "insync" ]; then
+		packagelist="insync"		
+	elif [ "$app" == "okular" ]; then
+		packagelist="okular"				
+	elif [ "$app" == "dev" ]; then
+		packagelist="gcc git make"		
+	elif [ "$app" == "uklocale" ]; then
+		sudo update-locale LANG=en_GB.UTF-8 LC_TIME=en_GB.UTF-8
+		exit	
+	elif [ "$app" == "vscode" ]; then
+		packagelist="code"		
+	elif [ "$app" == "rpi-imager" ]; then
+		snap="rpi-imager"
+	elif [ "$app" == "latex" ]; then
 		fonts="texlive-fonts-recommended texlive-fonts-extra"
 		packagelist="texlive texlive-base texlive-latex-recommended texlive-latex-extra $fonts"
-	elif [ "$1" == "nodejs" ]; then
+	elif [ "$app" == "nodejs" ]; then
 		command="node"
-	elif [ "$1" == "golang" ]; then
+	elif [ "$app" == "golang" ]; then
 		command="go"
-	elif [ "$1" == "" ]; then	
+	elif [ "$app" == "" ]; then	
 		echo "You need to specify which package or command to install. See addtool -h."
 		exit
 	fi
 
-	if [ -x "$(command -v $command)" ]; then
-		echo "$1 is already installed"	  
+	# Check whether app is already installed 
+	if   [ "$app" == "jmri" ]; then
+		if [ -d /opt/JMRI ]; then
+			echo "JMRI is already installed"	
+			exit
+		fi
+	fi	
+
+	if [ -x "$(command -v $app)" ]; then
+		echo "$app is already installed"	  
 		exit
 	fi
-fi	
+	
 
 if [ "$packagelist" != "" ]; then
 	aptinstall $packagelist
 
-elif [ "$1" == "dotnet" ]; then
+elif [ "$snap" != "" ]; then
+	sudo snap install $snap
+
+elif [ "$app" == "dotnet" ]; then
 	echo "dotnet not installed. Installing..."
 	dest=/usr/local/bin
 	cd ~
@@ -119,7 +171,7 @@ elif [ "$1" == "dotnet" ]; then
 	sudo mv ~/dotnet-install $dest
 	dotnet-install
 
-elif [ "$1" == "java" ]; then
+elif [ "$app" == "java" ]; then
 	echo "java not installed. Installing openjdk-11... (n.b. v17 is latest LTS)"
 	if [ "$2" == "jdk" ]; then		
 		sudo apt install -y openjdk-11-jdk
@@ -128,8 +180,8 @@ elif [ "$1" == "java" ]; then
 		sudo apt install -y default-jre
 	fi
 
-elif [ "$1" == "jmri" ]; then
-	echo "JMRI not installed. Installing v5.6..."
+elif [ "$app" == "jmri" ]; then
+	echo "JMRI not installed. Installing v5.8..."
 	
 	# JRE is required 
 	if [ ! -x "$(command -v java)" ]; then
@@ -137,8 +189,8 @@ elif [ "$1" == "jmri" ]; then
 		sudo apt install -y openjdk-11-jre
 	fi
 	
-	path="https://github.com/JMRI/JMRI/releases/download/v5.6"
-	file="JMRI.5.6+R89a87446cb.tgz"	
+	path="https://github.com/JMRI/JMRI/releases/download/v5.8"
+	file="JMRI.5.8+Rbc21ce2ce7.tgz"	
 
 	wget_tar $path $file "JMRI" "/opt"
 	shortcut decoderpro "/opt/JMRI" DecoderPro
@@ -150,16 +202,16 @@ elif [ "$1" == "jmri" ]; then
 	echo "set 'Do not ask options on launch executable file' to true"
 	echo "in File Manager, Edit, Preferences, General."
 
-elif [ "$1" == "nodejs" ]; then	
+elif [ "$app" == "nodejs" ]; then	
 	echo "Installing node v15.4. v17 is the latest but CbusServer won't 'npm install' with it."
 	curl -sL https://deb.nodesource.com/setup_15.x | sudo -E bash -
 	sudo apt install -y nodejs
 	echo "Use versions command to report which node and npm versions are installed."
 
-elif [ "$1" == "npm" ]; then	
+elif [ "$app" == "npm" ]; then	
 	echo "To install npm use 'addtool nodejs'"
 
-elif [ "$1" == "pandoc" ]; then	
+elif [ "$app" == "pandoc" ]; then	
 	if [ "$(query arch)" == "armv6l" ]; then
 		echo "Cannot use pandoc on armv6l"
 		exit
@@ -169,8 +221,7 @@ elif [ "$1" == "pandoc" ]; then
 		stem=linux-$(query arch).tar.gz
 		gh release download --pattern=*$stem --repo jgm/pandoc
 		file=$(ls *$stem)
-		
-		
+				
 	else	
 		pandocversion="2.17.1.1"
 		path="https://github.com/jgm/pandoc/releases/download/$pandocversion"
@@ -187,6 +238,23 @@ elif [ "$1" == "golang" ]; then
 	wget_tar $path $file "go" "/usr/local"
 	update_profile "/usr/local/go/bin" 'export PATH=$PATH:/usr/local/go/bin'
 	update_profile "GOPATH" 'export GOPATH=$HOME/go'
+
+elif [ "$1" == "naps2" ]; then		
+	version="7.5.1"
+	file="naps2-$version-linux-x64.deb"
+	path="https://github.com/cyanfish/naps2/releases/download/v$version"
+	wget_deb $path/$file $file
+	
+elif [ "$1" == "steam" ]; then		
+	sudo dpkg --add-architecture i386
+	sudo apt install curl -y
+	file="steam_latest.deb"
+	path="https://cdn.akamai.steamstatic.com/client/installer/steam.deb"
+	wget_deb $path $file	
+
+elif [ "$1" == "calibre" ]; then		
+	sudo apt install libxcb-cursor0 -y
+	sudo -v && wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sudo sh /dev/stdin
 
 elif [ "$1" == "mono" ]; then	
 	# From https://www.mono-project.com/download/stable/#download-lin-raspbian
