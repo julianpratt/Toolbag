@@ -21,6 +21,7 @@ git push
 
 gh release create $version --latest --title "Toolbag $version" 
 
+echo "Building hub, please wait..."
 cd hub
 archs=(amd64 arm arm64)
 for arch in ${archs[@]}
@@ -34,6 +35,16 @@ cd scripts
 tar czf ../scripts.tar.gz .
 cd .. 
 
-gh release upload $version setup hub/hub_* scripts.tar.gz
+cd services
+tar czf ../services.tar.gz .
+cd .. 
+
+sed 's/VERSION/version="$version"/' setup-base > setup
+
+echo "Uploading, please be patient..."
+gh release upload $version setup hub/hub_* scripts.tar.gz services.tar.gz
+
 rm hub/hub_* 
 rm scripts.tar.gz
+rm services.tar.gz
+rm setup

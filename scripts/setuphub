@@ -28,40 +28,27 @@
 	mkdir ~/temp	
 	cd ~/temp 
 	
-	# Get scripts and services from main branch (n.b. not from latest release)  
-	wget https://github.com/julianpratt/Toolbag/archive/refs/heads/main.tar.gz -O toolbag.tar.gz
-	tar xvzf toolbag.tar.gz --strip-components=1
-
-	# Install scripts   	
-	if [ ! -d ~/temp/scripts ]; then 	
-		echo "scripts folder missing from Toolbag, I cannot proceed"	
-		exit
-	fi	
-	cd ~/temp/scripts
-	chmod 777 *	# scripts, etc come down from github without the execute permission set 
-	sudo chown root:root * 
-	sudo mv * $destbin
+	version=$(toolbag)
+	source="https://github.com/julianpratt/Toolbag/releases/download/$version" 
 	
 	# Install hub
 	if [ "$(query arch)" == "unknown" ]; then 	
 		echo "Unknown machine architecture. I cannot install hub"	
 		exit
 	fi	
-	version=$(versions toolbag) # get latest version number
-	wget https://github.com/julianpratt/Toolbag/releases/download/$version/hub_$(query arch) -O hub
+	wget $source/hub_$(query arch) -O hub
 	chmod 777 *	# executables come down from github without the execute permission set 
 	sudo chown root:root * 
 	sudo mv * $destbin
 
 	# Install services   	
-	if [ ! -d ~/temp/services ]; then 	
-		echo "services folder missing from Toolbag, I cannot install services"	
-		exit
-	elif [ ! -x "$(command -v systemctl)" ]; then	
+	if [ ! -x "$(command -v systemctl)" ]; then	
 		echo "systemctl command missing, I cannot install services"		
 		exit
 	fi
-	cd ~/temp/services
+	wget $source/services.tar.gz
+	tar xvzf services.tar.gz
+	rm services.tar.gz
 	chmod 644 *	# permissions should be: -rw-r--r-- 
 	sudo chown root:root * 
 	for f in *; do
@@ -78,5 +65,4 @@
 	# Clean up
 	cd ~
 	sudo rm -rf temp
-	rm setup
 	

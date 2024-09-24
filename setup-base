@@ -1,0 +1,47 @@
+#!/bin/bash
+
+# Components of Toolbag are installed in /usr/local/bin
+# because this is generally on the path and rarely used.  
+
+	destbin=/usr/local/bin
+	destserv=/lib/systemd/system
+
+	if [ ! -d "$destbin" ]; then 	
+		echo "'$destbin' folder missing, I cannot proceed"		
+		exit
+	elif [ ! -d "$destserv" ]; then 	
+		echo "'$destserv' folder missing, I cannot proceed"		
+		exit
+	elif [ ! -x "$(command -v wget)" ]; then
+		echo "wget command missing, I cannot proceed"		
+		exit
+	elif [ ! -x "$(command -v tar)" ]; then	
+		echo "tar command missing, I cannot proceed"		
+		exit
+	fi
+
+	# Make temp
+	if [ -d ~/temp ]; then
+		echo "~/temp already exists. Delete it before running this"
+		exit	
+	fi  
+	mkdir ~/temp	
+	cd ~/temp 
+	
+	# Next line is updated upon release 
+	VERSION
+	source="https://github.com/julianpratt/Toolbag/releases/download/$version" 
+	
+	# Install scripts   	
+	wget $source/scripts.tar.gz
+	tar xvzf scripts.tar.gz
+	rm scripts.tar.gz
+	chmod 777 *	# scripts, etc come down from github without the execute permission set 
+	sudo chown root:root * 
+	sudo mv * $destbin
+	
+	# Clean up
+	cd ~
+	sudo rm -rf temp
+	rm setup
+	
