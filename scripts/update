@@ -21,13 +21,21 @@ do
     fi
 done
 
+version=$(toolbag)
+
 if [ "$1" == "toolbag" ]; then
 	echo "Just updating toolbag scripts"
+	if "$2" != "" ]; then
+		version="$2"
+	fi		
 elif [ -x "$(command -v apt)" ]; then
 	sudo apt update
 	sudo apt full-upgrade -y
 	sudo apt autoremove   # remove no longer needed dependencies
 	sudo apt autoclean    # removes packages that can no longer be downloaded
+	if "$1" != "" ]; then
+		version="$1"
+	fi		
 fi
 
 if   [ ! -x "$(command -v wget)" ]; then
@@ -36,16 +44,19 @@ elif [ ! -x "$(command -v tar)" ]; then
 	echo "Cannot update Toolbag components, tar is not available" 	
 else
 	
-	# Get latest setup script, make it executable and execute it (setup deletes itself)
+	destbin=/usr/local/bin
+	source="https://github.com/julianpratt/Toolbag/releases/download/$version" 
+	
+	# Install scripts   	
+	wget $source/scripts.tar.gz
+	tar xvzf scripts.tar.gz
+	rm scripts.tar.gz
+	chmod 777 *	# scripts, etc come down from github without the execute permission set 
+	sudo chown root:root * 
+	sudo mv * $destbin
+	
+	# Clean up
 	cd ~
-
-	# Make temp
-	. temp
-	wget https://github.com/julianpratt/Toolbag/archive/refs/heads/main.tar.gz -O toolbag.tar.gz
-	tar xvzf toolbag.tar.gz --strip-components=1
-	cp setup ..
-	cd ~
-	. temp untemp
-    chmod +x setup
-    ~/setup
+	sudo rm -rf temp
+	
 fi    
