@@ -39,7 +39,7 @@ cd services
 tar czf ../services.tar.gz .
 cd .. 
 
-sed 's/VERSION/version="$version"/' setup-base > setup
+sed "s/VERSION/version=$version/" setup-base > setup
 
 echo "Uploading, please be patient..."
 gh release upload $version setup hub/hub_* scripts.tar.gz services.tar.gz

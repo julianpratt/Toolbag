@@ -91,19 +91,19 @@ fi
 	app="$1"
 
 	if   [ "$app" == "full" ]; then
-		setup base
-		setup dev
-		setup calibre
-		setup naps2
-		setup steam
-		setup okular
-		setup rpi-imager
+		config base
+		config dev
+		config calibre
+		config naps2
+		config steam
+		config okular
+		config rpi-imager
 		exit
 		
 	elif [ "$app" == "base" ]; then	
-		setup geany
-		setup uklocale
-		setup insync
+		config geany
+		config uklocale
+		config insync
 		exit
 
 	fi		
@@ -113,8 +113,6 @@ fi
 	
 	if   [ "$app" == "geany" ]; then
 		packagelist="geany"
-	elif [ "$app" == "insync" ]; then
-		packagelist="insync"		
 	elif [ "$app" == "okular" ]; then
 		packagelist="okular"				
 	elif [ "$app" == "dev" ]; then
@@ -243,6 +241,11 @@ elif [ "$1" == "naps2" ]; then
 	version="7.5.1"
 	file="naps2-$version-linux-x64.deb"
 	path="https://github.com/cyanfish/naps2/releases/download/v$version"
+	wget_deb $path/$file $file
+
+elif [ "$1" == "insync" ]; then		
+	file="insync_3.9.4.60020-noble_amd64.deb"
+	path="https://cdn.insynchq.com/builds/linux/3.9.4.60020"
 	wget_deb $path/$file $file
 	
 elif [ "$1" == "steam" ]; then		
