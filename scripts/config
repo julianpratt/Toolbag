@@ -106,6 +106,12 @@ fi
 		config insync
 		exit
 
+	elif [ "$app" == "dev" ]; then	
+		config gcc
+		config git
+		config make
+		exit
+
 	fi		
 
 	packagelist=""
@@ -115,8 +121,12 @@ fi
 		packagelist="geany"
 	elif [ "$app" == "okular" ]; then
 		packagelist="okular"				
-	elif [ "$app" == "dev" ]; then
-		packagelist="gcc git make"		
+	elif [ "$app" == "gcc" ]; then
+		packagelist="gcc"		
+	elif [ "$app" == "git" ]; then
+		packagelist="git"		
+	elif [ "$app" == "make" ]; then
+		packagelist="make"				
 	elif [ "$app" == "uklocale" ]; then
 		sudo update-locale LANG=en_GB.UTF-8 LC_TIME=en_GB.UTF-8
 		exit	
@@ -251,9 +261,9 @@ elif [ "$1" == "insync" ]; then
 elif [ "$1" == "steam" ]; then		
 	sudo dpkg --add-architecture i386
 	sudo apt install curl -y
-	file="steam_latest.deb"
-	path="https://cdn.akamai.steamstatic.com/client/installer/steam.deb"
-	wget_deb $path $file	
+	file="steam.deb"
+	path="https://cdn.akamai.steamstatic.com/client/installer"
+	wget_deb $path/$file $file
 
 elif [ "$1" == "calibre" ]; then		
 	sudo apt install libxcb-cursor0 -y
