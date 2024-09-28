@@ -43,6 +43,9 @@ if   [ ! -x "$(command -v wget)" ]; then
 elif [ ! -x "$(command -v tar)" ]; then
 	echo "Cannot update Toolbag components, tar is not available" 	
 else
+
+	mkdir ~/temp	
+	cd ~/temp 
 	
 	destbin=/usr/local/bin
 	source="https://github.com/julianpratt/Toolbag/releases/download/$version" 
@@ -57,6 +60,6 @@ else
 	
 	# Clean up
 	cd ~
-	sudo rm -rf temp
+	sudo rm -rf ~/temp
 	
 fi    
