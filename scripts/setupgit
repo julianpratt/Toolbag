@@ -26,4 +26,5 @@ else
 	git config --global user.name  "$(userdata get $USER name)" 	
     git config --global user.email "$(userdata get $USER email)" 	
 	echo "export GITPAT=$(cat Dev/gitpat.txt)" >> ~/.profile
+	echo "export GH_TOKEN=$GITPAT" >> ~/.profile
 fi

@@ -270,7 +270,7 @@ elif [ "$1" == "calibre" ]; then
 	sudo -v && wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sudo sh /dev/stdin
 
 elif [ "$1" == "mono" ]; then	
-	os-release=$(cat /etc/os-release | grep ^ID=)
+	os-release="$(cat /etc/os-release | grep ^ID=)"
 	if   [ "$os-release" == "ID=ubuntu"   ]; then
 		deb_url="https://download.mono-project.com/repo/ubuntu stable-focal"
 	elif [ "$os-release" == "ID=raspbian" ]; then
