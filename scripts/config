@@ -270,12 +270,22 @@ elif [ "$1" == "calibre" ]; then
 	sudo -v && wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sudo sh /dev/stdin
 
 elif [ "$1" == "mono" ]; then	
-	# From https://www.mono-project.com/download/stable/#download-lin-raspbian
+	os-release=$(cat /etc/os-release | grep ^ID=)
+	if   [ "$os-release" == "ID=ubuntu"   ]; then
+		deb_url="https://download.mono-project.com/repo/ubuntu stable-focal"
+	elif [ "$os-release" == "ID=raspbian" ]; then
+		deb_url="https://download.mono-project.com/repo/debian stable-raspbianbuster"	
+	else		
+		echo "OS Release $os-release not recognised."
+		exit
+	fi
+	# From https://www.mono-project.com/download/stable
 	sudo apt install dirmngr ca-certificates gnupg
 	sudo gpg --homedir /tmp --no-default-keyring --keyring /usr/share/keyrings/mono-official-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
-	echo "deb [signed-by=/usr/share/keyrings/mono-official-archive-keyring.gpg] https://download.mono-project.com/repo/debian stable-raspbianbuster main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list
+	echo "deb [signed-by=/usr/share/keyrings/mono-official-archive-keyring.gpg] $deb_url main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list
 	sudo apt update
 	sudo apt install mono-complete
+
 
 elif [ "$1" == "cprogs" ]; then	
 	dest=/usr/local/bin

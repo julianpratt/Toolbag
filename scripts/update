@@ -25,7 +25,7 @@ version=$(toolbag)
 
 if [ "$1" == "toolbag" ]; then
 	echo "Just updating toolbag scripts"
-	if "$2" != "" ]; then
+	if [ "$2" != "" ]; then
 		version="$2"
 	fi		
 elif [ -x "$(command -v apt)" ]; then
@@ -33,7 +33,7 @@ elif [ -x "$(command -v apt)" ]; then
 	sudo apt full-upgrade -y
 	sudo apt autoremove   # remove no longer needed dependencies
 	sudo apt autoclean    # removes packages that can no longer be downloaded
-	if "$1" != "" ]; then
+	if [ "$1" != "" ]; then
 		version="$1"
 	fi		
 fi
