@@ -1,0 +1,418 @@
+#!/bin/bash
+
+usage() {
+cat << EOF  
+setup - installs Linux apps  
+
+        Usage: 'setup list'      (to list apps available)
+               'setup update'    (to update apps and packages)  
+               'setup userdata'  (sets data in GECOS field of /etc/passwd)                 
+               'setup appname'   (e.g. setup dotnet)
+EOF
+exit
+}
+
+usageUserData() {
+cat << EOF  
+setup userdata -  sets data in the GECOS field of /etc/passwd
+
+			Usage:	'setup userdata LOGIN NAME EMAIL 	
+			where:	LOGIN is the login of the user
+					NAME is the name of the user (i.e. first name and surname)
+					EMAIL is the emal address of the user
+					e.g. setup userdata fred "Fred Bloggs" "fred.bloggs@gmail.com"					
+EOF
+exit
+}
+
+# Utility Methods
+
+fatal()     { echo "fatal: $*" >&2; exit 1; }                # exit with message and generic error code       
+try()       { "$@" 2> /dev/null || fatal "cannot $*"; }      # fatal if not successful
+checktemp() { [ -d ~/temp ] && fatal "~/temp exists. Delete it before trying this"; }
+temp()      { checktemp; mkdir ~/temp && cd ~/temp; }        # ensure we are in temp folder
+untemp ()   { cd ~; [ -d ~/temp ] && rm -rf ~/temp; }        # remove temp folder 
+checkcmd()  { [ ! -x "$(command -v $1)" ] && fatal "$1 missing, cannot proceed"; } 
+download()  { temp; try wget -q "$1";  }	                 # Create temp folder and fetch a file into it
+execute()   { chmod +x "$1"; $1; }
+untar()     { try tar xf "$1"; rm "$1"; }                    # untar a file in temp folder and delete it
+debpkg()    { sudo dpkg -i $1; rm $1; untemp; cd ~; }
+move()      { cd ~/temp; sudo mv "$1" "$2"; untemp; }        # move file or folder from temp and the remove temp
+savepipe()  { sudo tee "$1" > /dev/null; }                   # Save file in pipe
+upd_prof()  { [ ! $(grep -q "$1" ~/.profile) ] && echo "$2" >> ~/.profile; }  # Add line to ~/.profile
+geturl()    { jq -r ".[] | select(.name==\"$1\") | .url" $config; }
+setup-deb() { download $(geturl $1); debpkg $(ls *.deb); untemp; }
+latest()    { checkcmd gh; echo $(gh release view --repo $1 | grep tag: | cut -d ':' -f 2 | xargs); } 
+
+getFullName() { getent passwd "$1" | awk -F: '{print $5}' | awk -F, '{print $1}'; }  
+getEmail()    { getent passwd "$1" | awk -F: '{print $5}' | awk -F, '{print $5}'; }  
+
+setup-source() { download $(geturl $1) && untar $(ls) && cd $(ls) && ./configure && make && sudo make install && untemp; }
+
+shortcut() {
+	name="$1"
+	folder="$2"
+	command="$3"
+
+	temp
+	cat > $name << EOF
+#!/bin/bash
+
+if [ ! -d $folder ]; then
+  echo "$folder cannot be found!"
+elif [ ! -f $folder/$command ]; then
+  echo "$command cannot be found in $folder!"
+else
+  $folder/$command
+fi
+EOF
+	chmod +x $name
+	move $name /usr/local/bin
+	untemp
+}
+
+desktop()  {
+	command="$1"
+	appname="$2"
+	icon="$3"
+
+	[ ! -d ~/Desktop ]                && mkdir ~/Desktop
+	[ -f ~/Desktop/$command.desktop ] && rm ~/Desktop/$command.desktop
+
+	cat > ~/Desktop/$command.desktop << EOF
+[Desktop Entry]
+Encoding=UTF-8
+Name=$appname
+Comment=Start $appname
+Exec=$command
+Icon=$icon
+Terminal=false
+Type=Application
+X-KeepTerminal=false
+StartupNotify=false
+EOF
+	
+}
+
+autostart() {
+	# Creates link in ~/.config/autostart to .desktop in Desktop so app autostarts 
+	command="$1"
+
+	[ ! -d ~/.config ]                          && mkdir ~/.config
+	[ ! -d ~/.config/autostart ]                && mkdir ~/.config/autostart
+	[ -L ~/.config/autostart/$command.desktop ] && rm ~/.config/autostart/$command.desktop
+	ln -s ~/Desktop/$command.desktop ~/.config/autostart/$command.desktop
+}
+
+setup-service() {
+	name="$1"
+	desc="$2"
+	workdir="$3"
+	command="$4"
+	
+	# Boolean arguments. Positive: 1, yes, true and on are equivalent. Negative: 0, no, false and off are equivalent.
+	# See https://www.freedesktop.org/software/systemd/man/systemd.exec.html
+	# See https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html
+	# See https://www.freedesktop.org/software/systemd/man/latest/systemd.syntax.html
+	# https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/using_systemd_unit_files_to_customize_and_optimize_your_system/index
+	
+	destserv=/lib/systemd/system
+
+	[ ! -d "$dest" ]     && fatal "'$dest' folder missing, I cannot proceed"		
+	[ ! -d "$destserv" ] && fatal "'$destserv' folder missing, I cannot proceed"		
+	checkcmd wget
+	checkcmd tar
+	checkcmd systemctl
+	temp
+	f=$name.service
+
+cat >$f << EOF
+[Unit]
+Description=$desc
+After=remote-fs.target network.target
+AssertPathExists=$workdir
+
+[Install]
+WantedBy=multi-user.target
+
+[Service]
+User=root
+Group=root
+Type=simple
+ExecStart=$command
+WorkingDirectory=$workdir
+RestartSec=5s
+TimeoutStopSec=20
+KillMode=process
+Restart=on-failure
+
+DevicePolicy=closed
+PrivateTmp=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+SystemCallFilter=~@clock @debug @module @mount @obsolete @reboot @setuid @swap
+EOF
+
+# Some sandbox features only after version 230
+# See: https://www.freedesktop.org/software/systemd/man/systemd.exec.html 
+if [ "$(systemctl --version | head -1 | cut -d ' ' -f 2)" -gt 230 ]; then
+cat >>$f << EOF
+NoNewPrivileges=yes
+PrivateUsers=yes
+ProtectControlGroups=yes
+ProtectKernelModules=yes
+ProtectKernelTunables=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+ReadWritePaths=$workdir
+EOF
+fi
+
+	chmod 644 $f  # permissions should be: -rw-r--r-- 
+	sudo chown root:root $f 
+	if [ "$(systemctl is-active --quiet $f)" ]; then
+		sudo systemctl stop   $name
+	fi	
+	sudo mv $f $destserv
+	sudo systemctl daemon-reload
+	sudo systemctl enable $name
+	sudo systemctl start  $name
+	
+	untemp
+}
+
+setup-github() {
+	app="$1"	
+	
+	[ ! -x "$(command -v gh)" ] && fatal "Cannot install &app from GitHub - missing gh command" 
+
+	row=$(jq ".[] | select(.name==\"$app\")" $config)
+	repo=$(echo $row  | jq -r '.repo')
+	start=$(echo $row | jq -r '.start')
+	stem=$(echo $row  | jq -r '.stem')
+	packagetype="$(echo $stem | cut -d '.' -f 2-)"
+
+	# stem is correct for Intel (AMD), fix it if architecture is arm64 
+	[ "$arch" == "arm64" ] && stem="arm64.$packagetype"
+	
+	temp
+	gh release download --pattern=$start*$stem --repo $repo
+	file=$(ls *$stem)
+	
+	case "$(echo $packagetype | cut -d '.' -f 1)" in 
+		tar) untar  $file && chmod +x $app && move $app $dest && untemp ;;
+		deb) debpkg $file                                               ;; 
+		*)   fatal "Unknown package type '$packagetype' in setup-github()" ;;
+	esac
+}
+
+setup-git() {
+	[ "$(getFullName $USER)"  == "" ] && fatal "Full name missing from GECOS fields, use: setup userdata"
+    [ "$(getEmail    $USER)"  == "" ] && fatal "Email missing from GECOS fields, use: setup userdata"
+    [ "$(cat Dev/gitpat.txt)" == "" ] && fatal "gitpat.txt missing"
+	git config --global user.name  "$(getFullName $USER)" 	
+    git config --global user.email "$(getEmail    $USER)" 	
+	echo "export GITPAT=$(cat Dev/gitpat.txt)" >> ~/.profile
+	echo "export GH_TOKEN=$GITPAT" >> ~/.profile
+}
+
+
+# Built in apps - where install is more than just apt or flatpak 
+
+setup-go() {
+	version="1.22.5"
+	path="https://go.dev/dl"
+	file="go$version.linux-$arch.tar.gz"
+	
+	download $path/$file
+	untar $file 
+	move "go" "/usr/local"
+	upd_prof "/usr/local/go/bin" 'export PATH=$PATH:/usr/local/go/bin'
+	upd_prof "GOPATH" 'export GOPATH=$HOME/go'
+}
+
+setup-jmri() {
+	[ -d /opt/JMRI ] && fatal "JMRI is already installed"	
+
+	echo "JMRI not installed. Installing v5.8..."
+	
+	path="https://github.com/JMRI/JMRI/releases/download/v5.8"
+	file="JMRI.5.8+Rbc21ce2ce7.tgz"	
+
+	download $path/$file
+	untar $file 
+	move "JMRI" "/opt"
+	shortcut  decoderpro "/opt/JMRI" DecoderPro
+	shortcut  panelpro   "/opt/JMRI" PanelPro
+	desktop   panelpro "JMRI Panel Pro" "/opt/JMRI/resources/PanelPro.gif"
+	autostart panelpro
+
+	echo "JMRI PanelPro will autostart on reboot."
+	echo "To avoid popup options when using panelpro.desktop,"
+	echo "set 'Do not ask options on launch executable file' to true"
+	echo "in File Manager, Edit, Preferences, General."
+}
+
+
+setup-calibre() {
+	sudo apt install libxcb-cursor0 -y
+	sudo -v && wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sudo sh /dev/stdin
+}	
+
+setup-mono() {
+	case "$(cat /etc/os-release | grep '^ID=' | cut -c 4-9)" in 
+		ubuntu) deb_url="https://download.mono-project.com/repo/ubuntu stable-focal"          ;;
+		raspbi) deb_url="https://download.mono-project.com/repo/debian stable-raspbianbuster" ;; 
+		*)      fatal "OS Release not recognised."                                            ;;
+	esac
+	
+	# From https://www.mono-project.com/download/stable
+	sudo apt install dirmngr ca-certificates gnupg
+	keyring="/usr/share/keyrings/mono-official-archive-keyring.gpg"
+	sudo gpg --homedir /tmp --no-default-keyring --keyring $keyring --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
+	echo "deb [signed-by=$keyring] $deb_url main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list
+	sudo apt update
+	sudo apt install mono-complete
+}
+
+setup-noip2() {
+	echo "noip2 not installed. Installing..."
+	file="noip-duc_3.1.0"
+
+	temp
+	download "https://www.noip.com/download/linux/latest"
+	untar $file.tar.gz
+	cd $file 
+	make CC="gcc -w" -s
+	echo "Ignore the make install verbiage"
+	echo "Enter email used to login to www.noip.com (with password, '30' and 'N')"
+	sudo make install
+	sudo chmod +x debian.noip2.sh
+	sudo mv debian.noip2.sh /etc/init.d/noip2.sh
+	cd /etc/rc3.d
+	sudo ln -s ../init.d/noip2.sh S01noip2
+	cd /etc/rc5.d
+	sudo ln -s ../init.d/noip2.sh S01noip2
+	untemp
+}
+
+setup-gh() {
+	checkcmd wget
+	keyrings=/etc/apt/keyrings
+	ghkeyring=githubcli-archive-keyring.gpg
+	keyring=$keyrings/$ghkeyring
+	source=https://cli.github.com/packages/$ghkeyring
+	config="deb [arch=$arch signed-by=$keyring] $source stable main"
+	configfn="/etc/apt/sources.list.d/github-cli.list"
+	sudo mkdir -p -m 755 $keyrings && wget -qO- $source | savepipe $keyring && sudo chmod go+r $keyring && echo $config | savepipe $configfn && sudo nala install -y gh
+}
+
+setup-navidrome() {
+	workdir=$1
+	[ ! -f $workdir/navidrome.toml ] && fatal "'$workdir' does not contain navidrome.toml"	  
+	
+	sudo apt update
+	sudo apt upgrade
+	sudo apt install vim ffmpeg
+
+	setup-github navidrome
+		
+	# Navidrome Service
+	setup-service navidrome "Navidrome Music Server" $workdir "$dest/navidrome --configfile \"$workdir/navidrome.toml\"" 
+}
+
+
+# do actions: list or install
+
+
+doList() {
+	apps=$(jq -r '.[] | select(.list!="ignore" and .type!="group") | .name' $config)
+	for app in ${apps[@]} ; do
+	  # Test whether app is installed and find its version
+	  row=$(jq ".[] | select(.name==\"$app\")" $config)
+	  type=$(echo $row    | jq -r '.type')
+	  alias=$(echo $row   | jq -r '.alias')
+      [ "$alias" != "null" ] && app=$alias
+	  if [[ -x "$(command -v $app)" ]]; then
+		  case "$type" in 
+			apt)     dpkg-query -W $app | cut -d '-' -f 1  ;;
+			debian)  dpkg-query -W $app         ;;	
+			flatpak) v=$(flatpak run $app --version | head -n 1 | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+') && echo -e "$app\t$v" ;;
+			*)       v=$($app --version | head -n 1 | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+') && echo -e "$app\t$v" ;;
+		  esac	
+	  fi
+	done	  
+}
+
+doDepends() { [ ! -x "$(command -v $1)" ] && doInstall $1; }
+
+doInstall() {
+	local app=$1	
+	local workdir=$2
+
+	[ -x "$(command -v $app)" ] && fatal "$app is already installed"
+	
+	local row=$(jq ".[] | select(.name==\"$app\")" $config)
+	local type=$(echo $row    | jq -r '.type')
+	local alias=$(echo $row   | jq -r '.alias')
+    local depends=$(echo $row | jq -r '.depends')	
+	[ "$alias"   != "null" ] && app=$alias
+	[ "$depends" != "null" ] && for a in ${depends[@]} ; do doDepends $a; done
+	
+	case "$type" in 
+	  group)   echo "Group $app installed: $depends" ;;	
+	  apt)     sudo nala    install $app             ;;
+	  flatpak) sudo flatpak install $app             ;;
+	  github)  setup-github $app                     ;;
+	  debian)  setup-deb    $app                     ;;	  
+	  source)  setup-source $app                     ;; 
+	  builtin) setup-$app   $workdir                 ;;
+	  *)       fatal "Package or command '$app' is not recognised. Use: setup list to discover available apps." ;;	
+	esac		
+}
+
+doUpdate() {
+	checkcmd apt
+	sudo apt update
+	sudo apt full-upgrade -y
+	sudo apt autoremove   # remove no longer needed dependencies
+	sudo apt autoclean    # removes packages that can no longer be downloaded
+	echo "Latest Toolbag is $(latest julianpratt/Toolbag)"
+	temp	
+	try gh release download --pattern=scripts.tar.gz --repo julianpratt/Toolbag
+	untar scripts.tar.gz && chmod +x * && sudo chown root:root * && try sudo mv * /usr/local/bin && untemp
+}
+
+SetUserData() {
+	[ "$1" == "" ] && echo "Please specify the login of the user."         && usageUserData
+	[ "$2" == "" ] && echo "Please specify the name of the user."          && usageUserData
+	[ "$3" == "" ] && echo "Please specify the email address of the user." && usageUserData		
+	sudo chfn $1 -f "$2" -o "$3"
+} 
+
+doRemote() {
+	[ "$1" == "" ] && fatal "You need to specify the user and remote host names, e.g. fred@remote"
+	ssh $1 "git clone https://github.com/julianpratt/Toolbag ; chmod +x Toolbag/bootstrap ; Toolbag/bootstrap "
+}
+
+
+# MAIN
+
+while getopts h flag; do
+    [ ${flag} == "h" ] && usage 
+done
+
+[ -f /etc/VERSION ] && fatal "Do not use this on a Synology"	  
+
+dest=/usr/local/bin
+config=$dest/setup.config
+arch=$(dpkg --print-architecture)
+
+# confirm config is available
+
+case "$1" in 
+  list)     doList               ;;
+  update)   doUpdate             ;; 
+  userdata) SetUserData $2 $3 $4 ;; 
+  remote)   doRemote    $2       ;;     
+  *)        doInstall   $1 $2    ;;
+esac  

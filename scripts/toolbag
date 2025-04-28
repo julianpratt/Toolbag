@@ -1,2 +1,24 @@
-#!/bin/bash 
-echo "v1.9"
+#!/bin/bash
+
+cat << EOF  
+
+Toolbag - tools to simplify stuff and reduce documentation
+
+They are installed into /usr/local/bin from Toolbag by running the Toolbag/bootstrap script. 
+This is their documentation. For more information on each tool use: tool -h (e.g. versions -h).
+
+Areas covered:
+* remote storage, e.g. Drive, Dropbox and GitHub (push and pull) 
+* systemd background services (setup)
+* file management (treesize)
+
+lowerfn   - filenames to lower case
+photometa - update metadata of photos
+pull      - changes from the cloud - synchronise a folder with its master copy in the cloud
+push      - changes to the cloud - synchronise a folder with its master copy in the cloud
+query     - report on configuration and environment (e.g. IP address) 
+setup     - install: dotnet, java, JMRI, vscode, latex, pandoc, golang, mono, noip2 
+treesize  - calculates space used by folders in current directory
+	
+n.b. setup, pull and push should not be used on a Synology NAS.
+EOF

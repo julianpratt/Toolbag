@@ -6,14 +6,14 @@ Tools to aid brain fade and reduce documentation
 
 Toolbag components are installed in /usr/local/bin, because this folder is in the path (and is often empty).
 
-The steps are: download setup script, make it executable, run it and delete it. For VERSION substitute the latest version (e.g. v1.0).
+The steps are: download bootstrap script, make it executable, run it and delete it. For VERSION substitute the latest version (e.g. v1.0).
 
-    wget -q -O- https://github.com/julianpratt/Toolbag/releases/download/VERSION/setup | sh 
+    wget -q -O- https://github.com/julianpratt/Toolbag/releases/download/VERSION/bootstrap | sh 
 
 
 ## Usage
 
-Each tool responds to -h, and the tools command lists the tools and their purpose.
+Each tool responds to -h, and the `toolbag` command lists the tools and their purpose.
 
 
 ## Building a Raspberry Pi
@@ -47,7 +47,7 @@ Put the SD card into the Pi and power up. After a while SSH (port 22) into the P
 
 Then setup Toolbag (see Installation, above) and download the latest updates:
 
-    update
+    setup update
 
 
 ### Power Save 
@@ -70,11 +70,8 @@ These instructions are a development (he might say regression) of Steve Todd's R
 
 The aim is to get the Raspberry Pi to a point that it just boots straight into the panel and is active and ready. So just applying power is enough to get the layout functioning.  
 
-Start with the instructions for setting up a Raspberry Pi (above). Then use addtool to add java and then jmri:
+Start with the instructions for setting up a Raspberry Pi (above). Then use setup to add jmri: `setup jmri`
 
-    addtool java
-    addtool jmri		
-    
 Start PanelPro (double click the desktop icon) and quit saving changes to the Profile. 
 
 If you have an existing JMRI profile, panels, etc, then fetch these onto the Raspberry Pi, plug in the layout USB (e.g. CBUS CANUSB4) and restart PanelPro. Then switch the default profile to the one you've just downloaded and save it. 

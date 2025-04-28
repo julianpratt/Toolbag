@@ -5,8 +5,12 @@ do
     if [ ${flag} == "h" ]
     then 
 		echo "query - report on configuration and environment"
-        echo "        'query ip' reports: IP address, gateway IP address and DNS IP address" 
-        echo "        'query arch' reports the machine architecture (as used by golang: amd64, arm64 or armv6l)" 
+        echo "        'query ip'       IP address, gateway IP address and DNS IP address" 
+        echo "        'query system'   Machine Name, Kernel Version, CPU Model, Total Memory" 
+        echo "        'query hardware' does lshw" 
+        echo "        'query disks'    partitions and disks" 
+        echo "        'query arch'     machine architecture (as used by golang: amd64, arm64 or armv6l)" 
+        echo "n.b. neofetch or top/htop may be more useful" 
 		exit
     fi
 done
@@ -15,6 +19,19 @@ if   [ "$1" == "ip" ]; then
     echo "IP address is $(hostname -I)"
     echo "Gateway IP address is $(ip r | grep default)"
     cat /etc/resolv.conf | grep nameserver
+    
+elif [ "$1" == "system" ]; then    
+    echo "Machine Name:   $(uname -n)"
+    echo "Kernel Version: $(uname -r)"
+    echo "CPU Model:      $(lscpu | grep 'Model name'   | cut -d ':' -f 2 | xargs)"
+    echo "Total Memory:   $(grep MemTotal /proc/meminfo | cut -d ':' -f 2 | xargs)"
+    
+elif [ "$1" == "hardware" ]; then        
+	sudo lshw
+	
+elif [ "$1" == "disks" ]; then        
+	lsblk | grep -v loop
+	df -h
 
 elif [ "$1" == "arch" ]; then
 	a=$(uname -m)
