@@ -254,24 +254,25 @@ setup-jmri() {
 
 
 setup-calibre() {
-	sudo apt install libxcb-cursor0 -y
+	sudo apt install -y libxcb-cursor0
 	sudo -v && wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sudo sh /dev/stdin
 }	
 
 setup-mono() {
 	case "$(cat /etc/os-release | grep '^ID=' | cut -c 4-9)" in 
 		ubuntu) deb_url="https://download.mono-project.com/repo/ubuntu stable-focal"          ;;
+		linuxm) deb_url="https://download.mono-project.com/repo/ubuntu stable-focal"          ;;		
 		raspbi) deb_url="https://download.mono-project.com/repo/debian stable-raspbianbuster" ;; 
 		*)      fatal "OS Release not recognised."                                            ;;
 	esac
 	
 	# From https://www.mono-project.com/download/stable
-	sudo apt install dirmngr ca-certificates gnupg
+	sudo apt install -y dirmngr ca-certificates gnupg
 	keyring="/usr/share/keyrings/mono-official-archive-keyring.gpg"
 	sudo gpg --homedir /tmp --no-default-keyring --keyring $keyring --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
 	echo "deb [signed-by=$keyring] $deb_url main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list
-	sudo apt update
-	sudo apt install mono-complete
+	sudo apt update  -y
+	sudo apt install -y mono-complete
 }
 
 setup-noip2() {
@@ -312,7 +313,7 @@ setup-navidrome() {
 	
 	sudo apt update
 	sudo apt upgrade
-	sudo apt install vim ffmpeg
+	sudo apt install -y vim ffmpeg
 
 	setup-github navidrome
 		
@@ -360,7 +361,7 @@ doInstall() {
 	
 	case "$type" in 
 	  group)   echo "Group $app installed: $depends" ;;	
-	  apt)     sudo nala    install $app             ;;
+	  apt)     sudo nala    install -y $app          ;;
 	  flatpak) sudo flatpak install $app             ;;
 	  github)  setup-github $app                     ;;
 	  debian)  setup-deb    $app                     ;;	  

@@ -43,20 +43,21 @@
 	# Clean up
 	cd ~
 	sudo rm -rf temp
-	rm bootstrap	
 	
-	# Install Nala (https://manual.siduction.org/sys-admin-nala_en.html) and Flatpak as standard
+	# Install Nala (https://manual.siduction.org/sys-admin-nala_en.html), jq and Flatpak as standard
 	sudo apt update
-	sudo apt install nala  
-	sudo apt install flatpak
-	sudo add-apt-repository ppa:flatpak/stable
-	flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo	
+	sudo apt install nala jq  
+	if [ ! -x "$(command -v $app)" ]; then
+	  sudo apt install flatpak
+	  sudo add-apt-repository ppa:flatpak/stable
+	  flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo	
+	fi  
 	
 	
 	# Other Standard Setup
 	
 	# Required by Steam, but only set if on amd64  
-	[ "$(uname -m)" == "x86_64" ]; sudo dpkg --add-architecture i386
+	[ "$(uname -m)" == "x86_64" ] && sudo dpkg --add-architecture i386
 	
 	# If the keyboard layout is UK, then set the locale to UK  
-	[ "$(localectl status | grep 'X11 Layout' | cut -d: -f2)" == " gb" ]; sudo update-locale LANG=en_GB.UTF-8 LC_TIME=en_GB.UTF-8
+	[ "$(localectl status | grep 'X11 Layout' | cut -d: -f2)" == " gb" ] && sudo update-locale LANG=en_GB.UTF-8 LC_TIME=en_GB.UTF-8
