@@ -42,7 +42,9 @@ savepipe()  { sudo tee "$1" > /dev/null; }                   # Save file in pipe
 upd_prof()  { [ ! $(grep -q "$1" ~/.profile) ] && echo "$2" >> ~/.profile; }  # Add line to ~/.profile
 geturl()    { jq -r ".[] | select(.name==\"$1\") | .url" $config; }
 setup-deb() { download $(geturl $1); debpkg $(ls *.deb); untemp; }
-latest()    { checkcmd gh; echo $(gh release view --repo $1 | grep tag: | cut -d ':' -f 2 | xargs); } 
+gh_json()   { curl --silent -m 10 --connect-timeout 5 "https://api.github.com/repos/$1/releases/latest"; } 
+gh_url()    { gh_json $1 | jq -r ".assets.[] | select(.name == \"$2\") | .browser_download_url"; }
+latest()    { gh_json $1 | jq -r .tag_name; }
 
 getFullName() { getent passwd "$1" | awk -F: '{print $5}' | awk -F, '{print $1}'; }  
 getEmail()    { getent passwd "$1" | awk -F: '{print $5}' | awk -F, '{print $5}'; }  
@@ -298,13 +300,16 @@ setup-noip2() {
 
 setup-gh() {
 	checkcmd wget
-	keyrings=/etc/apt/keyrings
-	ghkeyring=githubcli-archive-keyring.gpg
-	keyring=$keyrings/$ghkeyring
-	source=https://cli.github.com/packages/$ghkeyring
-	config="deb [arch=$arch signed-by=$keyring] $source stable main"
-	configfn="/etc/apt/sources.list.d/github-cli.list"
-	sudo mkdir -p -m 755 $keyrings && wget -qO- $source | savepipe $keyring && sudo chmod go+r $keyring && echo $config | savepipe $configfn && sudo nala install -y gh
+	checkcmd jq
+	checkcmd curl
+	checkcmd dpkg
+	
+	tag=$(latest cli/cli)
+	name=gh_${tag:1}_linux_amd64.deb
+	try download $(gh_url cli/cli $name)
+	cd ~/temp
+	file=$(ls *$stem)
+	debpkg $file      	
 }
 
 setup-navidrome() {
@@ -378,8 +383,7 @@ doUpdate() {
 	sudo apt autoremove   # remove no longer needed dependencies
 	sudo apt autoclean    # removes packages that can no longer be downloaded
 	echo "Latest Toolbag is $(latest julianpratt/Toolbag)"
-	temp	
-	try gh release download --pattern=scripts.tar.gz --repo julianpratt/Toolbag
+	try download $(gh_url julianpratt/Toolbag scripts.tar.gz)
 	untar scripts.tar.gz && chmod +x * && sudo chown root:root * && try sudo mv * /usr/local/bin && untemp
 }
 
