@@ -46,8 +46,8 @@
 	
 	# Install Nala (https://manual.siduction.org/sys-admin-nala_en.html), jq and Flatpak as standard
 	sudo apt update
-	sudo apt install nala jq  
-	if [ ! -x "$(command -v $app)" ]; then
+	sudo apt install -y nala jq curl  
+	if [ ! -x "$(command -v flatpak)" ]; then
 	  sudo apt install flatpak
 	  sudo add-apt-repository ppa:flatpak/stable
 	  flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo	

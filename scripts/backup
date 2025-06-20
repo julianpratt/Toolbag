@@ -1,0 +1,36 @@
+#!/bin/bash
+#
+# backup - runs as a scheduled task
+#
+# zip options are:
+#    FS - filesync (update zip with new or changed files, remove any deleted files)
+#    r  - recurse into subdirectories
+#    x  - exclude these (in this case hidden files/directories) 
+
+# Zip up Drive/Books
+echo "Backing up Drive/Books" 
+zip -FSr /home/julian/Drive/Backups/Books.zip            /home/julian/Books -x .*
+
+# Zip up Drive/Dev
+echo "Backing up Drive/Dev"
+zip -FSr /home/julian/Drive/Backups/Dev.zip              /home/julian/Dev -x .*
+
+# Zip up Drive/Documents
+echo "Backing up Drive/Documents"
+zip -FSr /home/julian/Drive/Backups/Documents.zip        /home/julian/Documents -x .*
+
+# Zip up Drive/Mail (local folders)
+echo "Backing up Drive/Mail"
+zip -FSr /home/julian/Drive/Backups/Mail.zip             /home/julian/Mail -x .*
+
+# Zip up Drive/Photos
+echo "Backing up Drive/Photos"
+zip -FSr /home/julian/Drive/Backups/Photos.zip           /home/julian/Photos -x .*
+
+# Zip up Drive/Publish
+echo "Backing up Drive/Publish"
+zip -FSr /home/julian/Drive/Backups/Publish.zip          /home/julian/Publish -x .*
+
+# Zip up Drive/Trains (includes: JMRI, flimConfig, Southwell, Scalescenes)
+echo "Backing up Drive/Trains"
+zip -FSr /home/julian/Drive/Backups/Trains.zip           /home/julian/Trains -x .*

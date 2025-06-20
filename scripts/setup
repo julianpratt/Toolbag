@@ -208,6 +208,8 @@ setup-github() {
 }
 
 setup-git() {
+	sudo nala install -y git
+	
 	[ "$(getFullName $USER)"  == "" ] && fatal "Full name missing from GECOS fields, use: setup userdata"
     [ "$(getEmail    $USER)"  == "" ] && fatal "Email missing from GECOS fields, use: setup userdata"
     [ "$(cat Dev/gitpat.txt)" == "" ] && fatal "gitpat.txt missing"
