@@ -8,7 +8,7 @@ Toolbag components are installed in /usr/local/bin, because this folder is in th
 
 The steps are: download bootstrap script, make it executable, run it and delete it. For VERSION substitute the latest version (e.g. v1.0).
 
-    wget -q -O- https://github.com/julianpratt/Toolbag/releases/download/VERSION/bootstrap | sh 
+    wget -q -O- https://github.com/julianpratt/Toolbag/releases/download/VERSION/bootstrap | bash 
 
 
 ## Usage
