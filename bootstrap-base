@@ -57,7 +57,7 @@
 	# Other Standard Setup
 	
 	# Required by Steam, but only set if on amd64  
-	[ "$(uname -m)" == "x86_64" ] && sudo dpkg --add-architecture i386
+	[ "$(uname -m)" EQ "x86_64" ] && sudo dpkg --add-architecture i386
 	
 	# If the keyboard layout is UK, then set the locale to UK  
-	[ "$(localectl status | grep 'X11 Layout' | cut -d: -f2)" == " gb" ] && sudo update-locale LANG=en_GB.UTF-8 LC_TIME=en_GB.UTF-8
+	[ "$(localectl status | grep 'X11 Layout' | cut -d: -f2)" EQ " gb" ] && sudo update-locale LANG=en_GB.UTF-8 LC_TIME=en_GB.UTF-8
