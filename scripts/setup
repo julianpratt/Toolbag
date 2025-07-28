@@ -43,7 +43,7 @@ upd_prof()  { [ ! $(grep -q "$1" ~/.profile) ] && echo "$2" >> ~/.profile; }  # 
 geturl()    { jq -r ".[] | select(.name==\"$1\") | .url" $config; }
 setup-deb() { download $(geturl $1); debpkg $(ls *.deb); untemp; }
 gh_json()   { curl --silent -m 10 --connect-timeout 5 "https://api.github.com/repos/$1/releases/latest"; } 
-gh_url()    { gh_json $1 | jq -r ".assets.[] | select(.name == \"$2\") | .browser_download_url"; }
+gh_url()    { gh_json $1 | jq -r ".assets[] | select(.name == \"$2\") | .browser_download_url"; }
 latest()    { gh_json $1 | jq -r .tag_name; }
 
 getFullName() { getent passwd "$1" | awk -F: '{print $5}' | awk -F, '{print $1}'; }  
@@ -267,6 +267,7 @@ setup-mono() {
 		ubuntu) deb_url="https://download.mono-project.com/repo/ubuntu stable-focal"          ;;
 		linuxm) deb_url="https://download.mono-project.com/repo/ubuntu stable-focal"          ;;		
 		raspbi) deb_url="https://download.mono-project.com/repo/debian stable-raspbianbuster" ;; 
+		debian) deb_url="https://download.mono-project.com/repo/debian stable-raspbianbuster" ;; 		
 		*)      fatal "OS Release not recognised."                                            ;;
 	esac
 	

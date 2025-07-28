@@ -7,30 +7,18 @@
 #    r  - recurse into subdirectories
 #    x  - exclude these (in this case hidden files/directories) 
 
-# Zip up Drive/Books
-echo "Backing up Drive/Books" 
-zip -FSr /home/julian/Drive/Backups/Books.zip            /home/julian/Books -x .*
+home=/home/julian
+backups=$home/Drive/Backups
+log=$backups/backup-log.txt 
 
-# Zip up Drive/Dev
-echo "Backing up Drive/Dev"
-zip -FSr /home/julian/Drive/Backups/Dev.zip              /home/julian/Dev -x .*
+do-folder() { echo "Backing up $1" >> $log ; zip -FSr $backups/$1.zip $home/$1 -x .* >> $log ; }  
 
-# Zip up Drive/Documents
-echo "Backing up Drive/Documents"
-zip -FSr /home/julian/Drive/Backups/Documents.zip        /home/julian/Documents -x .*
+echo "Backup Started" > $log
 
-# Zip up Drive/Mail (local folders)
-echo "Backing up Drive/Mail"
-zip -FSr /home/julian/Drive/Backups/Mail.zip             /home/julian/Mail -x .*
-
-# Zip up Drive/Photos
-echo "Backing up Drive/Photos"
-zip -FSr /home/julian/Drive/Backups/Photos.zip           /home/julian/Photos -x .*
-
-# Zip up Drive/Publish
-echo "Backing up Drive/Publish"
-zip -FSr /home/julian/Drive/Backups/Publish.zip          /home/julian/Publish -x .*
-
-# Zip up Drive/Trains (includes: JMRI, flimConfig, Southwell, Scalescenes)
-echo "Backing up Drive/Trains"
-zip -FSr /home/julian/Drive/Backups/Trains.zip           /home/julian/Trains -x .*
+do-folder Books
+do-folder Dev
+do-folder Documents
+do-folder Mail
+do-folder Photos
+do-folder Publish
+do-folder Trains
