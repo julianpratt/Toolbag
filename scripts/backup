@@ -15,6 +15,7 @@ do-folder() { echo "Backing up $1" >> $log ; zip -FSr $backups/$1.zip $home/$1 -
 
 echo "Backup Started" > $log
 
+do-folder 2Notes
 do-folder Books
 do-folder Dev
 do-folder Documents

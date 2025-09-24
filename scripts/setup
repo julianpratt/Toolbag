@@ -27,28 +27,30 @@ exit
 
 # Utility Methods
 
-fatal()     { echo "fatal: $*" >&2; exit 1; }                # exit with message and generic error code       
-try()       { "$@" 2> /dev/null || fatal "cannot $*"; }      # fatal if not successful
-checktemp() { [ -d ~/temp ] && fatal "~/temp exists. Delete it before trying this"; }
-temp()      { checktemp; mkdir ~/temp && cd ~/temp; }        # ensure we are in temp folder
-untemp ()   { cd ~; [ -d ~/temp ] && rm -rf ~/temp; }        # remove temp folder 
-checkcmd()  { [ ! -x "$(command -v $1)" ] && fatal "$1 missing, cannot proceed"; } 
-download()  { temp; try wget -q "$1";  }	                 # Create temp folder and fetch a file into it
-execute()   { chmod +x "$1"; $1; }
-untar()     { try tar xf "$1"; rm "$1"; }                    # untar a file in temp folder and delete it
-debpkg()    { sudo dpkg -i $1; rm $1; untemp; cd ~; }
-move()      { cd ~/temp; sudo mv "$1" "$2"; untemp; }        # move file or folder from temp and the remove temp
-savepipe()  { sudo tee "$1" > /dev/null; }                   # Save file in pipe
-upd_prof()  { [ ! $(grep -q "$1" ~/.profile) ] && echo "$2" >> ~/.profile; }  # Add line to ~/.profile
-geturl()    { jq -r ".[] | select(.name==\"$1\") | .url" $config; }
-setup-deb() { download $(geturl $1); debpkg $(ls *.deb); untemp; }
-gh_json()   { curl --silent -m 10 --connect-timeout 5 "https://api.github.com/repos/$1/releases/latest"; } 
-gh_url()    { gh_json $1 | jq -r ".assets[] | select(.name == \"$2\") | .browser_download_url"; }
-latest()    { gh_json $1 | jq -r .tag_name; }
-
-getFullName() { getent passwd "$1" | awk -F: '{print $5}' | awk -F, '{print $1}'; }  
-getEmail()    { getent passwd "$1" | awk -F: '{print $5}' | awk -F, '{print $5}'; }  
-
+fatal()        { echo "fatal: $*" >&2; exit 1; }                # exit with message and generic error code       
+try()          { "$@" 2> /dev/null || fatal "cannot $*"; }      # fatal if not successful
+checktemp()    { [ -d ~/temp ] && fatal "~/temp exists. Delete it before trying this"; }
+temp()         { checktemp; mkdir ~/temp && cd ~/temp; }        # ensure we are in temp folder
+untemp ()      { cd ~; [ -d ~/temp ] && rm -rf ~/temp; }        # remove temp folder 
+checkcmd()     { [ ! -x "$(command -v $1)" ] && fatal "$1 missing, cannot proceed"; } 
+download()     { temp; try wget -q "$1";  }	                 # Create temp folder and fetch a file into it
+execute()      { chmod +x "$1"; $1; }
+untar()        { try tar xf "$1"; rm "$1"; }                    # untar a file in temp folder and delete it
+debpkg()       { sudo dpkg -i $1; rm $1; untemp; cd ~; }
+move()         { cd ~/temp; sudo mv "$1" "$2"; untemp; }        # move file or folder from temp and the remove temp
+savepipe()     { sudo tee "$1" > /dev/null; }                   # Save file in pipe
+upd_prof()     { [ ! $(grep -q "$1" ~/.profile) ] && echo "$2" >> ~/.profile; }  # Add line to ~/.profile
+geturl()       { jq -r ".[] | select(.name==\"$1\") | .url" $config; }
+setup-deb()    { download $(geturl $1); debpkg $(ls *.deb); untemp; }
+gh_json()      { curl --silent -m 10 --connect-timeout 5 "https://api.github.com/repos/$1/releases/latest"; } 
+gh_url()       { gh_json $1 | jq -r ".assets[] | select(.name == \"$2\") | .browser_download_url"; }
+latest()       { gh_json $1 | jq -r .tag_name; }
+get_arch()     { dpkg --print-architecture; }                   # outputs amd64 or arm64
+get_os()       { . /etc/os-release && echo $ID; }               # outputs debian or linuxmint
+os_version()   { . /etc/os-release && echo ${UBUNTU_CODENAME:-$VERSION_CODENAME}; }  # outputs e.g. bookworm, noble, etc
+apt_source()   { echo "deb [arch=$(get_arch) signed-by=$2] $3" | sudo tee /etc/apt/sources.list.d/$1.list > /dev/null; }
+getFullName()  { getent passwd "$1" | awk -F: '{print $5}' | awk -F, '{print $1}'; }  
+getEmail()     { getent passwd "$1" | awk -F: '{print $5}' | awk -F, '{print $5}'; }  
 setup-source() { download $(geturl $1) && untar $(ls) && cd $(ls) && ./configure && make && sudo make install && untemp; }
 
 shortcut() {
@@ -194,7 +196,7 @@ setup-github() {
 	packagetype="$(echo $stem | cut -d '.' -f 2-)"
 
 	# stem is correct for Intel (AMD), fix it if architecture is arm64 
-	[ "$arch" == "arm64" ] && stem="arm64.$packagetype"
+	[ "$(get_arch)" == "arm64" ] && stem="arm64.$packagetype"
 	
 	temp
 	gh release download --pattern=$start*$stem --repo $repo
@@ -225,7 +227,7 @@ setup-git() {
 setup-go() {
 	version="1.22.5"
 	path="https://go.dev/dl"
-	file="go$version.linux-$arch.tar.gz"
+	file="go$version.linux-$(get_arch).tar.gz"
 	
 	download $path/$file
 	untar $file 
@@ -329,6 +331,29 @@ setup-navidrome() {
 	setup-service navidrome "Navidrome Music Server" $workdir "$dest/navidrome --configfile \"$workdir/navidrome.toml\"" 
 }
 
+setup-docker() {
+	
+	case "$(get_os)" in 
+		linuxmint) docker_url="https://download.docker.com/linux/ubuntu" ;;		
+		debian)    docker_url="https://download.docker.com/linux/debian" ;; 		
+		*)         fatal "OS Release not recognised." ;;
+	esac
+
+	sudo apt update
+	sudo apt install -y apt-transport-https ca-certificates curl gnupg
+	sudo install -m 0755 -d /etc/apt/keyrings
+	keyring="/etc/apt/keyrings/docker.asc"
+	sudo curl -fsSL $docker_url/gpg -o $keyring
+	sudo chmod a+r $keyring
+    apt_source "docker" "$keyring" "$docker_url $(os_version) stable"
+	sudo apt update
+	sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+}
+
+setup-joplin() {
+	wget -O - https://raw.githubusercontent.com/laurent22/joplin/dev/Joplin_install_and_update.sh | bash
+}
+
 
 # do actions: list or install
 
@@ -349,7 +374,8 @@ doList() {
 			*)       v=$($app --version | head -n 1 | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+') && echo -e "$app\t$v" ;;
 		  esac	
 	  fi
-	done	  
+	done
+	flatpak list --app	  
 }
 
 doDepends() { [ ! -x "$(command -v $1)" ] && doInstall $1; }
@@ -385,6 +411,7 @@ doUpdate() {
 	sudo apt full-upgrade -y
 	sudo apt autoremove   # remove no longer needed dependencies
 	sudo apt autoclean    # removes packages that can no longer be downloaded
+	flatpak update
 	echo "Latest Toolbag is $(latest julianpratt/Toolbag)"
 	try download $(gh_url julianpratt/Toolbag scripts.tar.gz)
 	untar scripts.tar.gz && chmod +x * && sudo chown root:root * && try sudo mv * /usr/local/bin && untemp
@@ -413,7 +440,6 @@ done
 
 dest=/usr/local/bin
 config=$dest/setup.config
-arch=$(dpkg --print-architecture)
 
 # confirm config is available
 
