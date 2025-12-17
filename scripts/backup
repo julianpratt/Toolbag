@@ -7,19 +7,29 @@
 #    r  - recurse into subdirectories
 #    x  - exclude these (in this case hidden files/directories) 
 
-home=/home/julian
-backups=$home/Drive/Backups
-log=$backups/backup-log.txt 
+if [ "$BACKUPS" == "" ] ; then
+    echo "Error: BACKUPS environment variable not set."    
+    exit
+fi
 
-do-folder() { echo "Backing up $1" >> $log ; zip -FSr $backups/$1.zip $home/$1 -x .* >> $log ; }  
+log=$BACKUPS/backup-log.txt 
+
+do-folder()  { echo "Zipping up $1" >> $log ; zip -FSr $BACKUPS/$1.zip $HOME/$1 -x .*   >> $log ; }  
 
 echo "Backup Started" > $log
 
-do-folder 2Notes
-do-folder Books
-do-folder Dev
-do-folder Documents
-do-folder Mail
-do-folder Photos
-do-folder Publish
-do-folder Trains
+for d in $(find $HOME -maxdepth 1 -not -path '*/.*' -type d) ; do
+    if [ "$d" != "$HOME" ]; then
+		if [ ! -z "$( ls -A $d )" ]; then
+			do-folder $(basename $d)
+		fi	
+    fi
+done
+
+if [ "$BACKUP_REMOTE" != "" ] ; then
+	if [ "$SSHPASS" == "" ] ; then
+	    echo "Error: SSHPASS environment variable not set."    
+    else
+		sshpass -e rsync -utp $BACKUPS/* $BACKUP_REMOTE
+	fi
+fi
