@@ -1,0 +1,17 @@
+#!/bin/bash
+#
+# clone - mirrors a folder as a backup
+#
+
+source=$1
+dest=$2
+
+do-folder()  { rsync -a --delete $source/$1/* $dest/$1 ; }  
+
+for d in $(find $source -maxdepth 1 -not -path '*/.*' -type d) ; do
+    if [ "$d" != "$source" ]; then
+		if [ ! -z "$( ls -A $d )" ]; then
+			do-folder $(basename $d)
+		fi	
+    fi
+done
