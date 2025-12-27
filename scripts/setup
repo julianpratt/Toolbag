@@ -354,6 +354,11 @@ setup-joplin() {
 	wget -O - https://raw.githubusercontent.com/laurent22/joplin/dev/Joplin_install_and_update.sh | bash
 }
 
+setup-todoist() {
+	wget https://todoist.com/linux_app/appimage
+	flatpak run it.mijorus.gearlever --integrate appimage --yes	
+} 
+
 
 # do actions: list or install
 
