@@ -359,6 +359,11 @@ setup-todoist() {
 	flatpak run it.mijorus.gearlever --integrate appimage --yes	
 } 
 
+setup-arduino() {
+	wget https://github.com/arduino/arduino-ide/releases/download/2.3.7/arduino-ide_2.3.7_Linux_64bit.AppImage
+	flatpak run it.mijorus.gearlever --integrate arduino-ide_2.3.7_Linux_64bit.AppImage --yes	
+}
+
 
 # do actions: list or install
 
