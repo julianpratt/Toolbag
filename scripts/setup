@@ -364,6 +364,40 @@ setup-arduino() {
 	flatpak run it.mijorus.gearlever --integrate arduino-ide_2.3.7_Linux_64bit.AppImage --yes	
 }
 
+setup-background() {
+	checkcmd pass-cli
+	try pass-cli test > /dev/null
+	local background=$(pass-cli item view pass://Personal/Desktop/background)
+	gsettings set org.cinnamon.desktop.background picture-uri file://$background	
+} 
+
+setup-protonpass() {
+	checkcmd curl
+	curl -fsSL https://proton.me/download/pass-cli/install.sh | bash
+	echo Now do: pass-cli login --interactive PROTON-USERID
+}
+
+geany-setting() {
+	local setting=$1
+	local from=$2
+	local to=$3	
+	sed -i s/"$setting=$from"/"$setting=$to"/ ~/.config/geany/geany.conf
+}
+
+setup-geanyconfig() {
+	[ ! -f ~/.config/geany/geany.conf ] && fatal "geany.conf is missing"
+	geany-setting pref_toolbar_show true false  
+	geany-setting sidebar_visible   true false  
+	geany-setting msgwindow_visible true false  		
+}
+
+setup-soundcard() {
+	local file=/etc/modprobe.d/blacklist.conf
+	[ ! -f $file ] && fatal "$file is missing"	
+	local value=snd_hda_codec_realtek
+	grep -q "$value" $file || echo "blacklist $value" | sudo tee -a $file > /dev/null
+}
+
 
 # do actions: list or install
 
@@ -397,6 +431,7 @@ doInstall() {
 	[ -x "$(command -v $app)" ] && fatal "$app is already installed"
 	
 	local row=$(jq ".[] | select(.name==\"$app\")" $config)
+	[ -z "$row" ] && fatal "Package or command $app is not recognised. Use: setup list to discover available apps."
 	local type=$(echo $row    | jq -r '.type')
 	local alias=$(echo $row   | jq -r '.alias')
     local depends=$(echo $row | jq -r '.depends')	
@@ -406,12 +441,12 @@ doInstall() {
 	case "$type" in 
 	  group)   echo "Group $app installed: $depends" ;;	
 	  apt)     sudo nala    install -y $app          ;;
-	  flatpak) sudo flatpak install $app             ;;
+	  flatpak) sudo flatpak install -y $app          ;;
 	  github)  setup-github $app                     ;;
 	  debian)  setup-deb    $app                     ;;	  
 	  source)  setup-source $app                     ;; 
 	  builtin) setup-$app   $workdir                 ;;
-	  *)       fatal "Package or command '$app' is not recognised. Use: setup list to discover available apps." ;;	
+	  *)       fatal "This should not happen!" ;;	
 	esac		
 }
 
