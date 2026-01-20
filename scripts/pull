@@ -1,5 +1,9 @@
 #!/bin/bash
 
+pass-item() { pass-cli item view pass://Personal/Desktop/$1; }  # Get value from Proton Pass Desktop 
+password()  { sshpass -p $(pass-item sshpass) $@; }             # Provide password for rsync
+
+
 while getopts h flag
 do
     if [ ${flag} == "h" ]
@@ -26,11 +30,18 @@ if [ -f /etc/VERSION ]; then
 fi
 
 if [ "${#2}" == 0 ]; then
-	remote="drive" 
+	remote="nas" 
 	folder="$1" 
 else
 	remote="$1" 
 	folder="$2" 
 fi	
 
-rclone sync $remote:$folder $folder
+if [ "$remote" == "nas" ]; then
+	password rsync -ru --delete rsync://$(pass-item remote)/$1/ ~/$1
+else
+	rclone sync $remote:$folder $folder
+fi
+
+
+
