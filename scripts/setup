@@ -374,7 +374,8 @@ setup-background() {
 setup-protonpass() {
 	checkcmd curl
 	curl -fsSL https://proton.me/download/pass-cli/install.sh | bash
-	echo Now do: pass-cli login --interactive PROTON-USERID
+	sudo mv .local/bin/pass-cli $dest
+	echo Now do: protonid PROTON-USERID
 }
 
 geany-setting() {
@@ -396,6 +397,36 @@ setup-soundcard() {
 	[ ! -f $file ] && fatal "$file is missing"	
 	local value=snd_hda_codec_realtek
 	grep -q "$value" $file || echo "blacklist $value" | sudo tee -a $file > /dev/null
+}
+
+setup-swap() {
+	# Create swap file
+	local file=/swapfile001
+	local value=10240000 
+	if not exists $file
+		sudo dd if=/dev/zero of=$file bs=1024 count=$value
+		sudo chmod 0600 $file
+		sudo mkswap $file
+		sudo echo "$file swap swap defaults 0 0" >> /etc/fstab
+	else
+		echo "Swap file already exists."	
+	fi  
+}
+
+setup-backups() {
+	(crontab -l 2>/dev/null; echo "0 8 * * * backup 2> /tmp/backup-err.txt") | crontab -
+}
+
+setup-dedrm() {
+	local latest="10.0.3"
+	local path="https://github.com/noDRM/DeDRM_tools/releases/download/v$latest"	
+	local file="DeDRM_tools_$latest.zip"
+
+	temp
+	download "$path/$file"
+	unzip $file
+	calibre-customize --add DeDRM_plugin.zip
+	untemp	
 }
 
 

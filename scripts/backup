@@ -26,12 +26,17 @@ log=$backups/backup-log.txt
 
 echo "Backup Started" > $log
 
-for d in $(find $home -maxdepth 1 -not -path '*/.*' -type d) ; do
-    if [ "$d" != "$home" ]; then
-		if [ ! -z "$( ls -A $d )" ]; then
-			do-folder $backups $(basename $d)
-		fi	
-    fi
-done
+if [ "${#1}" == 0 ]; then
+	for d in $(find $home -maxdepth 1 -not -path '*/.*' -type d) ; do
+		if [ "$d" != "$home" ]; then
+			if [ ! -z "$( ls -A $d )" ]; then
+				do-folder $backups $(basename $d)
+			fi	
+		fi
+	done
+else
+	echo "Zipping up $1" >> $log
+	zip -FSr $backups/$(basename $1).zip $1 -x .*   >> $log 
+fi  
 
 sshpass -p $password rsync -utp $backups/* rsync://$remote/$(basename $backups)
