@@ -403,7 +403,7 @@ setup-swap() {
 	# Create swap file
 	local file=/swapfile001
 	local value=10240000 
-	if not exists $file
+	if [ ! -f $file ]; then	
 		sudo dd if=/dev/zero of=$file bs=1024 count=$value
 		sudo chmod 0600 $file
 		sudo mkswap $file
