@@ -431,6 +431,7 @@ setup-dedrm() {
 }
 
 setup-data() {
+	[ ! -d "/data" ] && sudo mkdir /data	
 	upd_fstab "/data" "/dev/sda1       /data           ntfs-3g  permissions     0       2"	
 }
 
