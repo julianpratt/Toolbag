@@ -40,6 +40,7 @@ debpkg()       { sudo dpkg -i $1; rm $1; untemp; cd ~; }
 move()         { cd ~/temp; sudo mv "$1" "$2"; untemp; }        # move file or folder from temp and the remove temp
 savepipe()     { sudo tee "$1" > /dev/null; }                   # Save file in pipe
 upd_prof()     { [ ! $(grep -q "$1" ~/.profile) ] && echo "$2" >> ~/.profile; }  # Add line to ~/.profile
+upd_fstab()    { grep -q "$1" /etc/fstab || echo "$2" | sudo tee -a /etc/fstab > /dev/null; }  # Add line to /etc/fstab
 geturl()       { jq -r ".[] | select(.name==\"$1\") | .url" $config; }
 setup-deb()    { download $(geturl $1); debpkg $(ls *.deb); untemp; }
 gh_json()      { curl --silent -m 10 --connect-timeout 5 "https://api.github.com/repos/$1/releases/latest"; } 
@@ -407,7 +408,7 @@ setup-swap() {
 		sudo dd if=/dev/zero of=$file bs=1024 count=$value
 		sudo chmod 0600 $file
 		sudo mkswap $file
-		sudo echo "$file swap swap defaults 0 0" >> /etc/fstab
+		upd_fstab "$file" "$file    swap            swap     defaults        0       0"
 	else
 		echo "Swap file already exists."	
 	fi  
@@ -427,6 +428,10 @@ setup-dedrm() {
 	unzip $file
 	calibre-customize --add DeDRM_plugin.zip
 	untemp	
+}
+
+setup-data() {
+	upd_fstab "/data" "/dev/sda1       /data           ntfs-3g  permissions     0       2"	
 }
 
 
