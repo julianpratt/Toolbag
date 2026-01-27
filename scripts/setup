@@ -369,6 +369,8 @@ setup-background() {
 	checkcmd pass-cli
 	try pass-cli test > /dev/null
 	local background=$(pass-cli item view pass://Personal/Desktop/background)
+	local background-source=$(pass-cli item view pass://Personal/Desktop/background-source)
+	sudo apt install -y $background-source
 	gsettings set org.cinnamon.desktop.background picture-uri file://$background	
 } 
 
@@ -426,13 +428,29 @@ setup-dedrm() {
 	temp
 	download "$path/$file"
 	unzip $file
-	calibre-customize --add DeDRM_plugin.zip
+	flatpak run --command=calibre-customize com.calibre_ebook.calibre --add DeDRM_plugin.zip
 	untemp	
 }
 
 setup-data() {
 	[ ! -d "/data" ] && sudo mkdir /data	
 	upd_fstab "/data" "/dev/sda1       /data           ntfs-3g  permissions     0       2"	
+}
+
+setup-gitcred() {
+	sudo apt install -y git-credential-oauth
+	git credential-oauth configure
+}
+
+setup-fcu() {
+	[ ! -f Setup.msi ] && fatal "run 'setup fcu' in a folder with Setup.msi"
+	sudo apt install -y wine winetricks
+	sudo dpkg --add-architecture i386
+	sudo adduser $(whoami) dialout
+	WINEPREFIX=~/.wine32 WINEARCH=win32 wineboot
+	WINEPREFIX=~/.wine32 winetricks dotnet35sp1
+	WINEPREFIX=~/.wine32 msiexec /i Setup.msi
+	echo "Now do: ln -s FCUROOT ~/.wine32/drive_c/users/$(whoami)/FCUROOT"
 }
 
 
@@ -493,7 +511,7 @@ doUpdate() {
 	sudo apt full-upgrade -y
 	sudo apt autoremove   # remove no longer needed dependencies
 	sudo apt autoclean    # removes packages that can no longer be downloaded
-	flatpak update
+	flatpak update -y
 	echo "Latest Toolbag is $(latest julianpratt/Toolbag)"
 	try download $(gh_url julianpratt/Toolbag scripts.tar.gz)
 	untar scripts.tar.gz && chmod +x * && sudo chown root:root * && try sudo mv * /usr/local/bin && untemp
