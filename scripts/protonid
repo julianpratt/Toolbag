@@ -1,3 +1,4 @@
 #!/bin/bash
 
-pass-cli login --interactive $1
+pass-cli logout --force
+pass-cli login  --interactive $1

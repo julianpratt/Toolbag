@@ -369,8 +369,7 @@ setup-background() {
 	checkcmd pass-cli
 	try pass-cli test > /dev/null
 	local background=$(pass-cli item view pass://Personal/Desktop/background)
-	local background-source=$(pass-cli item view pass://Personal/Desktop/background-source)
-	sudo apt install -y $background-source
+	sudo apt install -y $(pass-cli item view pass://Personal/Desktop/background-source)
 	gsettings set org.cinnamon.desktop.background picture-uri file://$background	
 } 
 
@@ -398,8 +397,13 @@ setup-geanyconfig() {
 setup-soundcard() {
 	local file=/etc/modprobe.d/blacklist.conf
 	[ ! -f $file ] && fatal "$file is missing"	
-	local value=snd_hda_codec_realtek
+    # Mint 22.1 needed the codec below
+	#local value=snd_hda_codec_realtek
+    # Now for Mint 22.3:
+    local value=snd_hda_codec_alc269
 	grep -q "$value" $file || echo "blacklist $value" | sudo tee -a $file > /dev/null
+    sudo update-initramfs -u
+    echo "Now please reboot"
 }
 
 setup-swap() {
