@@ -3,11 +3,13 @@
 fatal()     { echo "fatal: $*" >&2; exit 1; }                   # exit with message and generic error code   
 pass-item() { pass-cli item view pass://Personal/Desktop/$1; }  # Get value from Proton Pass Desktop 
 check-set() { [ "$1" == "" ] && fatal "$2 not set."; }          # Confirm we have values
+checkcmd()  { [ ! -x "$(command -v $1)" ] && fatal "$1 missing, cannot proceed"; } 
 
 backups=$(pass-item backups)
 remote=$(pass-item remote)
 password=$(pass-item sshpass)
 
+checkcmd  sshpass
 check-set "$backups"  "backups"
 check-set "$remote"   "remote"
 check-set "$password" "sshpass"

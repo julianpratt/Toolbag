@@ -360,6 +360,8 @@ setup-todoist() {
 	flatpak run it.mijorus.gearlever --integrate appimage --yes	
 } 
 
+env DESKTOPINTEGRATION=1 /home/julian/AppImages/todoist.appimage --ozone-platform=x11 %U
+
 setup-arduino() {
 	wget https://github.com/arduino/arduino-ide/releases/download/2.3.7/arduino-ide_2.3.7_Linux_64bit.AppImage
 	flatpak run it.mijorus.gearlever --integrate arduino-ide_2.3.7_Linux_64bit.AppImage --yes	
@@ -389,9 +391,15 @@ geany-setting() {
 
 setup-geanyconfig() {
 	[ ! -f ~/.config/geany/geany.conf ] && fatal "geany.conf is missing"
-	geany-setting pref_toolbar_show true false  
-	geany-setting sidebar_visible   true false  
-	geany-setting msgwindow_visible true false  		
+	geany-setting pref_toolbar_show true  false  
+	geany-setting sidebar_visible   true  false  
+	geany-setting msgwindow_visible true  false
+	geany-setting line_wrapping     false true  		
+}
+
+setup-nemoconfig() {
+	gsettings set org.nemo.preferences default-folder-viewer    list-view
+	gsettings set org.nemo.list-view   enable-folder-expansion  true
 }
 
 setup-soundcard() {
@@ -404,6 +412,11 @@ setup-soundcard() {
 	grep -q "$value" $file || echo "blacklist $value" | sudo tee -a $file > /dev/null
     sudo update-initramfs -u
     echo "Now please reboot"
+}
+
+setup-steamdata() {
+	flatpak override --user --filesystem=/data com.valvesoftware.Steam
+    echo "Now please reboot"	
 }
 
 setup-swap() {
@@ -429,7 +442,6 @@ setup-dedrm() {
 	local path="https://github.com/noDRM/DeDRM_tools/releases/download/v$latest"	
 	local file="DeDRM_tools_$latest.zip"
 
-	temp
 	download "$path/$file"
 	unzip $file
 	flatpak run --command=calibre-customize com.calibre_ebook.calibre --add DeDRM_plugin.zip
@@ -439,6 +451,7 @@ setup-dedrm() {
 setup-data() {
 	[ ! -d "/data" ] && sudo mkdir /data	
 	upd_fstab "/data" "/dev/sda1       /data           ntfs-3g  permissions     0       2"	
+    echo "Now please reboot"
 }
 
 setup-gitcred() {
@@ -478,6 +491,10 @@ doList() {
 		  esac	
 	  fi
 	done
+	echo ""
+	echo "Flatpak Apps"
+	echo "============"
+	echo ""
 	flatpak list --app	  
 }
 
